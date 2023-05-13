@@ -36,7 +36,7 @@ public class MainHouseScreen : IScreen
             content.Load<Texture2D>("textures/main_house_screen/table_scrolls_hovered"),
             content.Load<Texture2D>("textures/main_house_screen/table_scrolls_hovered"),
             new Vector2(978, 523),
-            () => { });
+            () => { _game.SetScreen(GameScreen.ScrollsCraftingTable); });
         _buttonTableRunes = new UiButton(
             content.Load<Texture2D>("textures/main_house_screen/table_runes_default"),
             content.Load<Texture2D>("textures/main_house_screen/table_runes_hovered"),

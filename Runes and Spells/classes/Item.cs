@@ -15,45 +15,52 @@ public class Item
     public int Count { get; private set; }
     public bool IsBeingDragged;
     public Vector2 Position { get; private set;  }
-    private readonly bool _isDraggable;
     private bool _canBeDragged;
 
-    public bool showToolTip { get; private set; }
-    private bool startHovered;
-    private Timer hoverTimer;
+    public bool ShowToolTip { get; private set; }
+    private bool _startHovered;
+    private readonly Timer _hoverTimer;
+    
+    public string ToolTipText { get; init; }
 
-    public Item(ItemType type, Texture2D texture, string id, bool isDraggable)
+    /*public Item(ItemType type, Texture2D texture, string id, string toolTipText)
     {
         Type = type;
         Texture = texture;
         ID = id;
         Count = 1;
-        _isDraggable = isDraggable;
-        _canBeDragged = isDraggable;
-        hoverTimer = new Timer(2000, () => { showToolTip = true; });
-    }
+        _canBeDragged = true;
+        _hoverTimer = new Timer(AllGameItems.HoverTime, () => { ShowToolTip = true; });
+        ToolTipText = toolTipText;
+    }*/
     
-    public Item(ItemType type, Texture2D texture, string id, bool isDraggable, int count)
+    public Item(ItemType type, Texture2D texture, string id, string toolTipText, int count = 1)
     {
         Type = type;
         Texture = texture;
         ID = id;
-        _isDraggable = isDraggable;
-        _canBeDragged = isDraggable;
+        _canBeDragged = true;
         Count = count;
-        hoverTimer = new Timer(2000, () => { showToolTip = true; });
+        _hoverTimer = new Timer(AllGameItems.HoverTime, () => { ShowToolTip = true; });
+        ToolTipText = toolTipText;
     }
 
-    public void AddOne() => Count++;
-    public void SubtractOne() => Count--;
+    public Item(ItemInfo fromInfo, int count = 1) : this(fromInfo.Type, fromInfo.Texture, fromInfo.ID, fromInfo.ToolTip, count)
+    {
+        
+    }
+
+    public void AddCount(int count = 1) => Count += count;
+    public void SubtractCount(int count = 1) => Count = Count - count > 0 ? Count - count : 0;
     
+
     public void Update(Vector2 defaultPosition, List<UiSlot> dropableSlots)
     {
         var mouseState = Mouse.GetState();
         
         UpdateHover(mouseState);
 
-        if (_isDraggable && _canBeDragged)
+        if (_canBeDragged)
         {
             if (new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height).Contains(mouseState.X, mouseState.Y) && 
                 mouseState.LeftButton == ButtonState.Pressed)
@@ -78,18 +85,18 @@ public class Item
     {
         if (new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height).Contains(mouseState.X, mouseState.Y))
         {
-            if (!startHovered)
+            if (!_startHovered)
             {
-                hoverTimer.StartAgain();
-                startHovered = true;
+                _hoverTimer.StartAgain();
+                _startHovered = true;
             }
-            else hoverTimer.Tick();
+            else _hoverTimer.Tick();
         }
         else
         {
-            hoverTimer.Stop();
-            showToolTip = false;
-            startHovered = false;
+            _hoverTimer.Stop();
+            ShowToolTip = false;
+            _startHovered = false;
         }
     }
     

@@ -71,4 +71,5 @@ public class UiSlot
     
     public void Lock() => _isLocked = true;
     public void Unlock() => _isLocked = false;
+    public bool ContainsItem() => currentItem is not null;
 }

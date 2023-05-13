@@ -31,7 +31,6 @@ public class FurnaceMiniGame
             spriteBatch.Draw(ActualTexture(), _position, Color.White);
         }
     }
-
     public bool IsActive { get; set; }
     private readonly UiSlot _inputSlot;
     private readonly UiProgressBar _progressBar;
@@ -46,6 +45,7 @@ public class FurnaceMiniGame
     
     private List<(int start, int end, int width)> _successAreas;
     private Vector2 _pointerPosition;
+    private float _pointerSpeed;
     private bool _isMovingRight;
     private int _difficult;
     private bool _wasSpacePressed;
@@ -95,8 +95,10 @@ public class FurnaceMiniGame
         _wasSpacePressed = _isSpacePressed;
         _isSpacePressed = Keyboard.GetState()[Keys.Space] == KeyState.Down;
         var spaceClicked = !_wasSpacePressed && _isSpacePressed;
-        if (_isMovingRight && !spaceClicked) _pointerPosition.X += 2 + (float)_difficult/2;
-        else if (!spaceClicked) _pointerPosition.X -= 2 + (float)_difficult / 2;
+        
+        if (_isMovingRight && !spaceClicked) _pointerPosition.X += _pointerSpeed;
+        else if (!spaceClicked) _pointerPosition.X -= _pointerSpeed;
+        
         else
         {
             _spaceButton.IsPressed = true;
@@ -139,20 +141,23 @@ public class FurnaceMiniGame
     private List<(int start, int end, int width)> GenerateAreas()
     {
         var result = new List<(int start, int end, int width)>();
+        var tries = 0;
         while (result.Count < 3)
         {
             if (TryToGenerateArea(out var newArea, result))
-            {
                 result.Add(newArea);
-            }
+            
+            tries++;
+            if (tries > 15)
+                break;
         }
         return result;
     }
 
     private bool TryToGenerateArea(out (int start, int end, int width) area, List<(int start, int end, int width)> allAreas)
     {
-        var start = Random.Shared.Next((int)_minPosition, (int)_maxPosition - 300 + _difficult * 50);
-        var end = (int)Math.Min(start + Random.Shared.Next(105 - _difficult * 15, 300 - _difficult * 50), _maxPosition);
+        var start = Random.Shared.Next((int)_minPosition, (int)_maxPosition - 140 + _difficult * 20);
+        var end = (int)Math.Min(start + Random.Shared.Next(50, 140 - _difficult * 20), _maxPosition);
         if (!allAreas.Any(a => a.Item1 <= end && a.Item2 >= start))
         {
             area = (start, end, end - start);
@@ -165,6 +170,7 @@ public class FurnaceMiniGame
     public void Start(int difficult)
     {
         _difficult = difficult;
+        _pointerSpeed = 3 + (float)difficult / 2;
         _successAreas = GenerateAreas();
         IsActive = true;
         _inputSlot.Lock();
@@ -172,24 +178,18 @@ public class FurnaceMiniGame
 
     private void Stop(bool win)
     {
-        if (!win)
+        ItemInfo newItem;
+        if (!win || _inputSlot.currentItem.ID.Contains("failed"))
         {
-            _inputSlot.Clear();
-            Reset();
-            return;
-        }
-        if (!_inputSlot.currentItem.ID.Contains("failed"))
-        {
-            AllGameItems.SetRecipeFull(_inputSlot.currentItem.ID);
-            var newId = _inputSlot.currentItem.ID.Replace("unknown", "finished");
-            var newItem = AllGameItems.FinishedRunes[newId];
-            _inputSlot.SetItem(new Item(newItem.Type, newItem.Texture, newId, newItem.IsDraggable));
+            newItem = AllGameItems.ClaySmall;
         }
         else
         {
-            var newItem = AllGameItems.ClaySmall;
-            _inputSlot.SetItem(new Item(newItem.Type, newItem.Texture, newItem.ID, newItem.isDraggable));
+            AllGameItems.SetRecipeFull(_inputSlot.currentItem.ID);
+            var newId = _inputSlot.currentItem.ID.Replace("unknown", "finished");
+            newItem = AllGameItems.FinishedRunes[newId];
         }
+        _inputSlot.SetItem(new Item(newItem));
         Reset();
     }
 

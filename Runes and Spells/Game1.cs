@@ -28,6 +28,7 @@ public class Game1 : Game
     private MainHouseScreen _mainHouseScreen;
     private RuneCraftingTableScreen _runeCraftingTableScreen;
     private FurnaceScreen _furnaceScreen;
+    private ScrollCraftingScreen _scrollCraftingScreen;
     private Dictionary<GameScreen, IScreen> _allScreens;
     public readonly Inventory Inventory;
 
@@ -45,7 +46,7 @@ public class Game1 : Game
     {
         _graphics.PreferredBackBufferWidth = 1920;
         _graphics.PreferredBackBufferHeight = 1080;
-        _graphics.IsFullScreen = true; //FullScreen
+        _graphics.IsFullScreen = false; //FullScreen
         _graphics.ApplyChanges();
         _drawer = new Drawer();
         _mainMenu = new MainMenuScreen(this);
@@ -53,13 +54,15 @@ public class Game1 : Game
         _mainHouseScreen = new MainHouseScreen(this);
         _runeCraftingTableScreen = new RuneCraftingTableScreen(this);
         _furnaceScreen = new FurnaceScreen(this);
+        _scrollCraftingScreen = new ScrollCraftingScreen(this);
         _allScreens = new Dictionary<GameScreen, IScreen>()
         {
             { GameScreen.Menu, _mainMenu },
             { GameScreen.Backstory, _backStoryScreen},
             { GameScreen.MainHouseScreen, _mainHouseScreen},
             { GameScreen.RuneCraftingTable, _runeCraftingTableScreen},
-            { GameScreen.FurnaceScreen, _furnaceScreen}
+            { GameScreen.FurnaceScreen, _furnaceScreen},
+            { GameScreen.ScrollsCraftingTable, _scrollCraftingScreen}
         };
         
         foreach (var screen in _allScreens.Values)

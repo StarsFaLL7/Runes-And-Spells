@@ -63,7 +63,7 @@ public class RuneCraftingMiniGame
         
         var newId = AllGameItems.GetIdByRecipe(_currentScheme);
         var newItem = AllGameItems.UnknownRunes[newId];
-        outputSlot.SetItem(new Item(newItem.Type, newItem.Texture, newId, newItem.IsDraggable));
+        outputSlot.SetItem(new Item(newItem));
         
         _currentScheme = new List<bool>(9);
         for (var i = 0; i < 9; i++) _currentScheme.Add(false);
