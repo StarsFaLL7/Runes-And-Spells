@@ -31,13 +31,22 @@ public class FurnaceScreen : IScreen
             content.Load<Texture2D>("textures/buttons/button_back_wood_hovered"),
             content.Load<Texture2D>("textures/buttons/button_back_wood_pressed"),
             new Vector2(20, 20),
-            () => { _game.SetScreen(GameScreen.MainHouseScreen); });
+            () =>
+            {
+                _game.SetScreen(GameScreen.MainHouseScreen);
+                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 14)
+                {
+                    _game.Introduction.Step = 15;
+                    _inputSlot.Clear();
+                }
+            });
         _buttonStartMiniGame = new UiButton(content.Load<Texture2D>("textures/furnace_screen/button_wood_start_default"),
             content.Load<Texture2D>("textures/furnace_screen/button_wood_start_hovered"),
             content.Load<Texture2D>("textures/furnace_screen/button_wood_start_pressed"),
             new Vector2(794, 583),
             () =>
             {
+                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 11) _game.Introduction.Step = 12;
                 _miniGame.Start(_inputSlot.currentItem.ID.Contains("failed") ? 2 : int.Parse(_inputSlot.currentItem.ID.Split('_')[3]));
             });
         _inputSlot = new UiSlot(new Vector2(912, 444),
@@ -47,7 +56,7 @@ public class FurnaceScreen : IScreen
             content.Load<Texture2D>("textures/furnace_screen/mini_game/progress_bar_progress_full"),
             new Vector2(732, 555),
             0, 1000, 400);
-        _miniGame = new FurnaceMiniGame(_progressBar, _inputSlot, new Vector2(600, 691), content);
+        _miniGame = new FurnaceMiniGame(_progressBar, _inputSlot, new Vector2(600, 691), content, _game);
     }
 
     public void Update(GraphicsDeviceManager graphics)
@@ -57,11 +66,25 @@ public class FurnaceScreen : IScreen
             _miniGame.Update();
         else
         {
-            _buttonGoBack.Update(mouseState, ref _isButtonFocused);
             if (_inputSlot.currentItem is not null && _inputSlot.currentItem.Type == ItemType.UnknownRune) _buttonStartMiniGame.Update(mouseState, ref _isButtonFocused);
         }
         _inputSlot.Update(_game.Inventory);
         _game.Inventory.Update(graphics, _inputSlot);
+        if (_game.Introduction.IsPlaying)
+        {
+            if (_game.Introduction.Step == 10 && _inputSlot.ContainsItem())
+            {
+                _game.Introduction.Step = 11;
+                _inputSlot.Lock();
+            }
+            if (_game.Introduction.Step == 14)
+                _buttonGoBack.Update(mouseState, ref _isButtonFocused);
+        }
+        else if (!_miniGame.IsActive)
+        {
+            _buttonGoBack.Update(mouseState, ref _isButtonFocused);
+        }
+        
     }
 
     public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)

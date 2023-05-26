@@ -46,7 +46,15 @@ public class ScrollCraftingScreen : IScreen
             content.Load<Texture2D>("textures/buttons/button_back_wood_hovered"),
             content.Load<Texture2D>("textures/buttons/button_back_wood_pressed"),
             new Vector2(20, 20),
-            () => _game.SetScreen(GameScreen.MainHouseScreen) );
+            () =>
+            {
+                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 23)
+                {
+                    _game.Introduction.Step = 24;
+                    _outputSlot.Clear();
+                }
+                _game.SetScreen(GameScreen.MainHouseScreen);
+            } );
         _buttonOpenNotePad = new UiButton(
             content.Load<Texture2D>("textures/scroll_crafting_table/button_show_book_default"),
             content.Load<Texture2D>("textures/scroll_crafting_table/button_show_book_hovered"),
@@ -63,9 +71,9 @@ public class ScrollCraftingScreen : IScreen
         var slotTexture = content.Load<Texture2D>("textures/Inventory/slot_bg_stone");
         _inputSlot1 = new UiSlot(new Vector2(581, 323), slotTexture, true, ItemType.Rune);
         _inputSlot2 = new UiSlot(new Vector2(1045, 323), slotTexture, true, ItemType.Rune);
-        _outputSlot = new UiSlot(new Vector2(813, 323), slotTexture, false);
+        _outputSlot = new UiSlot(new Vector2(813, 323), slotTexture, true, ItemType.Paper);
         
-        _miniGame = new ScrollCraftingMiniGame(_outputSlot, _inputSlot1, _inputSlot2);
+        _miniGame = new ScrollCraftingMiniGame(_outputSlot, _inputSlot1, _inputSlot2, _game);
         _miniGame.Initialize(content);
         _buttonStartCraft = new UiButton(
             content.Load<Texture2D>("textures/rune_crafting_table/button_start_default"),
@@ -85,8 +93,10 @@ public class ScrollCraftingScreen : IScreen
         
         if (!_miniGame.IsActive)
         {
-            _buttonGoBack.Update(mouseState, ref _isButtonFocused);
-            if (_inputSlot1.ContainsItem() && _inputSlot2.ContainsItem() && !_outputSlot.ContainsItem())
+            if (_game.Introduction.IsPlaying && _game.Introduction.Step == 23 || !_game.Introduction.IsPlaying)
+                _buttonGoBack.Update(mouseState, ref _isButtonFocused);
+
+            if (_inputSlot1.ContainsItem() && _inputSlot2.ContainsItem() && _outputSlot.ContainsItem() && _outputSlot.currentItem.Type == ItemType.Paper)
                 _buttonStartCraft.Update(mouseState, ref _isButtonFocused);
         }
         else _miniGame.Update(mouseState, ref _isButtonFocused);
@@ -94,7 +104,7 @@ public class ScrollCraftingScreen : IScreen
         _inputSlot1.Update(_game.Inventory);
         _inputSlot2.Update(_game.Inventory);
         _outputSlot.Update(_game.Inventory);
-        _game.Inventory.Update(graphics, _inputSlot1, _inputSlot2);
+        _game.Inventory.Update(graphics, _inputSlot1, _inputSlot2, _outputSlot);
     }
 
     public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
@@ -109,7 +119,7 @@ public class ScrollCraftingScreen : IScreen
         if (!_miniGame.IsActive)
         {
             _buttonGoBack.Draw(spriteBatch);
-            if (_inputSlot1.ContainsItem() && _inputSlot2.ContainsItem() && !_outputSlot.ContainsItem())
+            if (_inputSlot1.ContainsItem() && _inputSlot2.ContainsItem() && _outputSlot.ContainsItem() && _outputSlot.currentItem.Type == ItemType.Paper)
                 _buttonStartCraft.Draw(spriteBatch);
         }
         else _miniGame.Draw(spriteBatch);

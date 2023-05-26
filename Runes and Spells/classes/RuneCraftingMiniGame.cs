@@ -26,9 +26,11 @@ public class RuneCraftingMiniGame
     private Vector2 _position;
     private MouseState lastMouseState;
     private MouseState currentMouseState;
-
-    public RuneCraftingMiniGame(Vector2 position, Mode mode, ContentManager content)
+    private Game1 _game;
+    
+    public RuneCraftingMiniGame(Vector2 position, Mode mode, ContentManager content, Game1 game)
     {
+        _game = game;
         _position = position;
         _mode = mode;
         _cellOnTexture = content.Load<Texture2D>("textures/rune_crafting_table/cell_clicked");
@@ -69,6 +71,11 @@ public class RuneCraftingMiniGame
         for (var i = 0; i < 9; i++) _currentScheme.Add(false);
     }
 
+    public List<bool> GetCurrentScheme()
+    {
+        return _currentScheme;
+    }
+
     public void Update()
     {
         if (!IsActive) return;
@@ -81,7 +88,10 @@ public class RuneCraftingMiniGame
             lastMouseState.LeftButton == ButtonState.Released && 
             currentMouseState.LeftButton == ButtonState.Pressed)
         {
-            _currentScheme[index] = !_currentScheme[index];
+            if (_game.Introduction.IsPlaying && index == 4)
+                _currentScheme[index] = true;
+            else if (!_game.Introduction.IsPlaying)
+                _currentScheme[index] = !_currentScheme[index];
         }
     }
 

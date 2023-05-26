@@ -27,13 +27,16 @@ public static class AllGameItems
         {9, ("moon", "Луна")}
     };
 
-    private static Dictionary<string, (Texture2D texture2D, string rus)> ScrollsTypes;
+    public static Dictionary<string, (Texture2D texture2D, string rus)> ScrollsTypes { get; private set; }
     public static Dictionary<string, ItemInfo> FinishedRunes { get; private set; }
     public static ItemInfo Clay;
     public static ItemInfo ClaySmall;
+    public static ItemInfo Paper;
     public static Dictionary<string, ItemInfo> UnknownRunes { get; private set; }
     
     public static Dictionary<string, ItemInfo> Scrolls { get; private set; }
+    
+    public static Dictionary<string, ItemInfo> Catalysts { get; private set; }
 
     private static Dictionary<List<bool>, string> _runesCreateRecipes;
     public static Dictionary<string, (int Size, bool IsFull, Texture2D HalfTexture, Texture2D FullTexture)> KnownRunesCraftRecipes
@@ -41,6 +44,11 @@ public static class AllGameItems
 
     private static Dictionary<string[], string> _scrollCraftRecipes;
     public static Dictionary<string, (bool isVisible, Texture2D Texture)> ScrollsRecipes { get; private set; }
+
+    public static Dictionary<(string mainRuneId, string secondaryRuneId), string> RuneUniteRecipes { get; private set; }
+        = new ();
+
+    public static Dictionary<string, int> SellingScrollsPrices { get; private set; }
 
     public static void Initialize(ContentManager content)
     {
@@ -65,6 +73,10 @@ public static class AllGameItems
             content.Load<Texture2D>($"textures/Inventory/items/piece_of_clay_small"), 
             ItemType.ClaySmall,
             "Кусочки глины");
+        Paper = new ItemInfo("paper",
+            content.Load<Texture2D>("textures/other_items/paper"),
+            ItemType.Paper,
+            "Волшебный пергамент");
 
         UnknownRunes = new Dictionary<string, ItemInfo>();
         for (var i = 1; i < 10; i++)
@@ -82,10 +94,42 @@ public static class AllGameItems
         ScrollsRecipes = new Dictionary<string, (bool isVisible, Texture2D Texture)>();
         AddScrolls();
         AddRunesCraftRecipes();
+        GenerateScrollsPrices();
+        InitializeCatalysts(content);
         KnownRunesCraftRecipes = new Dictionary<string, (int Size, bool IsFull, Texture2D HalfTexture, Texture2D FullTexture)>();
+    }
+
+    private static void InitializeCatalysts(ContentManager content)
+    {
         
     }
 
+    private static void GenerateScrollsPrices()
+    {
+        SellingScrollsPrices = new Dictionary<string, int>();
+        foreach (var type in ScrollsTypes.Keys.Where(k => k != "ancient"))
+            SellingScrollsPrices[type] = Random.Shared.Next(30, 70)/5*5;
+    }
+
+    public static void MakeSmallChangesToPrices()
+    {
+        foreach (var price in SellingScrollsPrices)
+        {
+            var modifier = Random.Shared.Next(-15, 15) / 5 * 5;
+            SellingScrollsPrices[price.Key] = price.Value + modifier >= 20 ?
+                price.Value + modifier <= 100 ? 
+                    price.Value + modifier 
+                    : 100 
+                : 20;
+        }
+    }
+    
+    public static void MakeBigChangesToPrices()
+    {
+        foreach (var price in SellingScrollsPrices)
+            SellingScrollsPrices[price.Key] = Random.Shared.Next(30, 70)/5*5;
+    }
+    
     public static string GetIdByRecipe(List<bool> scheme)
     {
         var resultId = _runesCreateRecipes
@@ -125,15 +169,15 @@ public static class AllGameItems
         ScrollsTypes = new()
         {
             {"nature", (_content.Load<Texture2D>("textures/scrolls/scroll_nature"), "Магия природы")},
-            {"ancient", (_content.Load<Texture2D>("textures/scrolls/scroll_ancient"), "Магия древних")},
-            {"corrupted", (_content.Load<Texture2D>("textures/scrolls/scroll_corrupted"), "Тёмная магия")},
-            {"faerie", (_content.Load<Texture2D>("textures/scrolls/scroll_faerie"), "Магия фей")},
-            {"ice", (_content.Load<Texture2D>("textures/scrolls/scroll_ice"), "Магия льда")},
-            {"life", (_content.Load<Texture2D>("textures/scrolls/scroll_life"), "Магия жизни")},
-            {"sun", (_content.Load<Texture2D>("textures/scrolls/scroll_sun"), "Магия солнца")},
-            {"toxic", (_content.Load<Texture2D>("textures/scrolls/scroll_toxic"), "Магия яда")},
             {"wind", (_content.Load<Texture2D>("textures/scrolls/scroll_wind"), "Магия ветра")},
-            {"ocean", (_content.Load<Texture2D>("textures/scrolls/scroll_ocean"), "Магия океана")}
+            {"ocean", (_content.Load<Texture2D>("textures/scrolls/scroll_ocean"), "Магия океана")},
+            {"sun", (_content.Load<Texture2D>("textures/scrolls/scroll_sun"), "Магия солнца")},
+            {"faerie", (_content.Load<Texture2D>("textures/scrolls/scroll_faerie"), "Магия фей")},
+            {"life", (_content.Load<Texture2D>("textures/scrolls/scroll_life"), "Магия жизни")},
+            {"ice", (_content.Load<Texture2D>("textures/scrolls/scroll_ice"), "Магия льда")},
+            {"toxic", (_content.Load<Texture2D>("textures/scrolls/scroll_toxic"), "Магия яда")},
+            {"corrupted", (_content.Load<Texture2D>("textures/scrolls/scroll_corrupted"), "Тёмная магия")},
+            {"ancient", (_content.Load<Texture2D>("textures/scrolls/scroll_ancient"), "Магия древних")}
         };
         var ExistingScrolls = new (string id, string rus)[]
         {
@@ -207,6 +251,22 @@ public static class AllGameItems
         }
         scroll = null;
         return false;
+    }
+
+    public static bool TryToUniteRunes(string mainRuneId, string SecondaryRuneId, out string resultRuneId)
+    {
+        var mainId = mainRuneId.Split('_');
+        var secondId = SecondaryRuneId.Split('_');
+        if (mainId[2] == secondId[2] && mainId[3] == secondId[3] && mainId[4] != secondId[4] && mainId[3] != "3")
+        {
+            resultRuneId = string.Join('_', "rune", "finished", mainId[2], int.Parse(mainId[3]) + 1, mainId[4]);
+            RuneUniteRecipes[(mainRuneId, SecondaryRuneId)] = resultRuneId;
+            return true;
+        }
+        
+        resultRuneId = null;
+        return false;
+        
     }
     
     private static void AddRunesCraftRecipes()

@@ -63,4 +63,12 @@ public class UiSlider
         if (BeingPressed)
             MoveToMouse(mouseState);
     }
+
+    public void Draw(SpriteBatch spriteBatch)
+    {
+        spriteBatch.Draw(BackTexture, Position, Color.White);
+        spriteBatch.Draw(HolderTexture, GetHolderPosition(), Color.White);
+    }
+
+    public void SetValue(float value) => MathHelper.Clamp(value, _minValue, _maxValue);
 }

@@ -30,7 +30,8 @@ public class ScrollCraftingMiniGame
     private int _textDrawCharIndex;
     private bool _firstDrawFinished;
     private Timer _firstDrawTimer;
-
+    private Game1 _game;
+    
     private Dictionary<string, string> _wordsSpecial = new()
     {
         {"water", "voco aquam"},
@@ -52,11 +53,12 @@ public class ScrollCraftingMiniGame
         "igunt", "res", "sub", "sentam", "opsum"
     };
 
-    public ScrollCraftingMiniGame(UiSlot outputSlot, UiSlot inputSlot1, UiSlot inputSlot2)
+    public ScrollCraftingMiniGame(UiSlot outputSlot, UiSlot inputSlot1, UiSlot inputSlot2, Game1 game)
     {
         _outputSlot = outputSlot;
         _inputSlot1 = inputSlot1;
         _inputSlot2 = inputSlot2;
+        _game = game;
     }
 
     public void Initialize(ContentManager content)
@@ -92,9 +94,11 @@ public class ScrollCraftingMiniGame
     
     public void Start()
     {
+        if (_game.Introduction.IsPlaying && _game.Introduction.Step == 21) _game.Introduction.Step = 22;
         IsActive = true;
         _inputSlot1.Lock();
         _inputSlot2.Lock();
+        _outputSlot.Lock();
         _generatedWords = GenerateWords();
         _firstDrawTimer.Start();
     }
@@ -195,6 +199,7 @@ public class ScrollCraftingMiniGame
 
     private void Stop()
     {
+        if (_game.Introduction.IsPlaying && _game.Introduction.Step == 22) _game.Introduction.Step = 23;
         IsActive = false;
         if (AllGameItems.TryToGetScrollByRunes(out var scroll, _inputSlot1.currentItem, _inputSlot2.currentItem))
         {
@@ -210,6 +215,7 @@ public class ScrollCraftingMiniGame
         IsActive = false;
         _inputSlot1.Unlock();
         _inputSlot2.Unlock();
+        _outputSlot.Unlock();
         _enteredText.Clear();
         _textDrawCharIndex = 0;
         _firstDrawFinished = false;

@@ -8,7 +8,7 @@ public enum GameScreen
     RuneCraftingTable,
     FurnaceScreen,
     ScrollsCraftingTable,
-    AltarHouseScreen,
+    AltarRoomScreen,
     AltarScreen,
     OutdoorScreen,
     TradingScreen

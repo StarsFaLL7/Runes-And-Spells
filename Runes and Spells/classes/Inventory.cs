@@ -112,7 +112,7 @@ public class Inventory
             {Tab.Runes, content.Load<Texture2D>("textures/Inventory/title_runes")},
             {Tab.Scrolls, content.Load<Texture2D>("textures/Inventory/title_scrolls")}
         };
-        AddAllItems(5);
+        //AddAllItems(5);
     }
 
     public void Update(GraphicsDeviceManager graphics, params UiSlot[] dropableSlots)
@@ -213,7 +213,10 @@ public class Inventory
         if (Items.Contains(item))
             Items[Items.IndexOf(item)].AddCount(count);
         else
+        {
             Items.Add(item);
+            Items[Items.IndexOf(item)].AddCount(count - 1);
+        }
     }
     
     private void AddAllItems(int count = 1)
@@ -230,4 +233,6 @@ public class Inventory
         AddItem(new Item(AllGameItems.Clay, count*4), count*4);
         AddItem(new Item(AllGameItems.ClaySmall, count*4), count*4);
     }
+
+    public void Clear() => Items.Clear();
 }

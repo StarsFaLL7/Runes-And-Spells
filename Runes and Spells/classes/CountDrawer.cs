@@ -25,6 +25,18 @@ public static class CountDrawer
             spriteBatch.Draw(_textures[numberStr[i]], new Vector2(newPosition.X + i*_textureWidth, newPosition.Y), Color.White);
         }
     }
+    public static void DrawNumber(int number, Vector2 rightBottomPosition, SpriteBatch spriteBatch, Color color)
+    {
+        if (_textures.Count == 0)
+            throw new InvalidOperationException();
+        
+        var numberStr = number.ToString();
+        var newPosition = new Vector2(rightBottomPosition.X - _textureWidth * numberStr.Length, rightBottomPosition.Y -_textureHeight);
+        for (var i = 0; i < numberStr.Length; i++)
+        {
+            spriteBatch.Draw(_textures[numberStr[i]], new Vector2(newPosition.X + i*_textureWidth, newPosition.Y), color);
+        }
+    }
 
     public static void Initialize(ContentManager content)
     {

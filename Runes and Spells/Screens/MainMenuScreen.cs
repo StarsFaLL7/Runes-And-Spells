@@ -39,7 +39,6 @@ public class MainMenuScreen: IScreen
     private UiSlider _sliderMusicVolume;
     private UiSlider _sliderEffectsVolume;
     private MenuTab _currentTab;
-    private Song _musicMenu;
     private SoundEffect _soundEffectPageFlip;
     
     private bool _oneElementIsFocused;
@@ -63,10 +62,6 @@ public class MainMenuScreen: IScreen
 
     public void LoadContent(ContentManager content, GraphicsDeviceManager graphics)
     {
-
-        _musicMenu = content.Load<Song>("music/MainMenuTheme");
-        MediaPlayer.Play(_musicMenu);
-        
         _soundEffectPageFlip = content.Load<SoundEffect>("sounds/page_flip");
         _textOptions = content.Load<Texture2D>("textures/main_menu/ui/text_options");
         _textNewGame = content.Load<Texture2D>("textures/main_menu/ui/text_new_game");
@@ -118,16 +113,21 @@ public class MainMenuScreen: IScreen
             content.Load<Texture2D>("textures/main_menu/ui/buttons/start_new_game_hovered"),
             content.Load<Texture2D>("textures/main_menu/ui/buttons/start_new_game_pressed"),
             new Vector2(1017, 495),
-            () => _game.SetScreen(GameScreen.Backstory));
+            () =>
+            {
+                _game.SetScreen(GameScreen.Backstory);
+                MediaPlayer.Stop();
+                MediaPlayer.Play(_game.BackstoryMusic);
+            });
         _buttonsMainMenu = new[] { _buttonNewGame, _buttonContinue, _buttonOptions, _buttonExitGame };
         _sliderMusicVolume = new UiSlider(
             content.Load<Texture2D>("textures/main_menu/ui/slider_back"), 
             content.Load<Texture2D>("textures/main_menu/ui/slider_holder"),
-                    new Vector2(1017, 384), 21f, 0f, 1f, 0.1f);
+                    new Vector2(1017, 384), 21f, 0f, 1f, MediaPlayer.Volume);
         _sliderEffectsVolume = new UiSlider(
             content.Load<Texture2D>("textures/main_menu/ui/slider_back"), 
             content.Load<Texture2D>("textures/main_menu/ui/slider_holder"),
-            new Vector2(1017, 474), 21f, 0f, 1f,0.5f);
+            new Vector2(1017, 474), 21f, 0f, 1f,SoundEffect.MasterVolume);
         _cloudsTextures = new[]
         {
             content.Load<Texture2D>("textures/main_menu/cloud1"),
@@ -150,8 +150,8 @@ public class MainMenuScreen: IScreen
         switch (_currentTab)
         {
             case MenuTab.Options:
-                SoundEffect.MasterVolume = _sliderEffectsVolume.Value;
-                MediaPlayer.Volume = _sliderMusicVolume.Value;
+                _game.SetMusicVolume(_sliderMusicVolume.Value);
+                _game.SetSoundsVolume(_sliderEffectsVolume.Value);
                 _sliderEffectsVolume.Update(mouseState, ref _oneElementIsFocused);
                 _sliderMusicVolume.Update(mouseState, ref _oneElementIsFocused);
                 break;
@@ -170,7 +170,7 @@ public class MainMenuScreen: IScreen
             drawer.Draw(spriteBatch, graphics, cloudInfo.texture2D, Position.Custom, cloudInfo.position, 0f, 0f);
         drawer.Draw(spriteBatch, graphics, _bookTexture, Position.Center, null, 0f, 0f);
         foreach (var button in _buttonsMainMenu)
-            spriteBatch.Draw(button.ActualTexture(), button.Position, Color.White);
+            button.Draw(spriteBatch);
         
         switch (_currentTab)
         {
@@ -190,10 +190,8 @@ public class MainMenuScreen: IScreen
     
     private void DrawTabOptions(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(_sliderMusicVolume.BackTexture, _sliderMusicVolume.Position, Color.White);
-        spriteBatch.Draw(_sliderMusicVolume.HolderTexture, _sliderMusicVolume.GetHolderPosition(), Color.White);
-        spriteBatch.Draw(_sliderEffectsVolume.BackTexture, _sliderEffectsVolume.Position, Color.White);
-        spriteBatch.Draw(_sliderEffectsVolume.HolderTexture, _sliderEffectsVolume.GetHolderPosition(), Color.White);
+        _sliderMusicVolume.Draw(spriteBatch);
+        _sliderEffectsVolume.Draw(spriteBatch);
         spriteBatch.Draw(_textOptions, new Vector2(1017,204), Color.White);
     }
     

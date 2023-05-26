@@ -31,6 +31,8 @@ public class FurnaceMiniGame
             spriteBatch.Draw(ActualTexture(), _position, Color.White);
         }
     }
+
+    private Game1 _game;
     public bool IsActive { get; set; }
     private readonly UiSlot _inputSlot;
     private readonly UiProgressBar _progressBar;
@@ -53,8 +55,9 @@ public class FurnaceMiniGame
     private readonly Timer _clickTimer;
     private readonly GuiButton _spaceButton;
     
-    public FurnaceMiniGame(UiProgressBar progressBar, UiSlot inputSlot, Vector2 position, ContentManager content)
+    public FurnaceMiniGame(UiProgressBar progressBar, UiSlot inputSlot, Vector2 position, ContentManager content, Game1 game)
     {
+        _game = game;
         _progressBar = progressBar;
         _inputSlot = inputSlot;
         _position = position;
@@ -90,8 +93,9 @@ public class FurnaceMiniGame
             _clickTimer.Tick();
             return;
         }
+        if (!_game.Introduction.IsPlaying) 
+            _progressBar.Subtract((float)(_difficult+3)/8);
         
-        _progressBar.Subtract((float)(_difficult+3)/8);
         _wasSpacePressed = _isSpacePressed;
         _isSpacePressed = Keyboard.GetState()[Keys.Space] == KeyState.Down;
         var spaceClicked = !_wasSpacePressed && _isSpacePressed;
@@ -101,6 +105,7 @@ public class FurnaceMiniGame
         
         else
         {
+            if (_game.Introduction.IsPlaying && _game.Introduction.Step == 12) _game.Introduction.Step = 13;
             _spaceButton.IsPressed = true;
             _pointerPosition.Y -= 12;
             _clickTimer.StartAgain();
@@ -117,6 +122,8 @@ public class FurnaceMiniGame
             }
             else
             {
+                if (_game.Introduction.IsPlaying) return;
+                
                 _progressBar.Subtract((_progressBar.MaxValue - _progressBar.MinValue) / (14 - _difficult*2));
             }
         }
@@ -178,6 +185,7 @@ public class FurnaceMiniGame
 
     private void Stop(bool win)
     {
+        if (_game.Introduction.IsPlaying && _game.Introduction.Step == 13) _game.Introduction.Step = 14;
         ItemInfo newItem;
         if (!win || _inputSlot.currentItem.ID.Contains("failed"))
         {
