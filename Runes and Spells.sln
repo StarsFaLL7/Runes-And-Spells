@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runes and Spells", "Runes and Spells\Runes and Spells.csproj", "{1644D354-EFBA-485F-955D-68A0A86D4C11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunesAndSpells.Tests", "RunesAndSpells.Tests\RunesAndSpells.Tests\RunesAndSpells.Tests.csproj", "{2B9EBD64-7D16-43F8-A0E1-E3AFF952D2EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{1644D354-EFBA-485F-955D-68A0A86D4C11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1644D354-EFBA-485F-955D-68A0A86D4C11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1644D354-EFBA-485F-955D-68A0A86D4C11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B9EBD64-7D16-43F8-A0E1-E3AFF952D2EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B9EBD64-7D16-43F8-A0E1-E3AFF952D2EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B9EBD64-7D16-43F8-A0E1-E3AFF952D2EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B9EBD64-7D16-43F8-A0E1-E3AFF952D2EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

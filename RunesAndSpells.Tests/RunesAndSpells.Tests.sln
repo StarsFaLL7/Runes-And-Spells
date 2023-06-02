@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunesAndSpells.Tests", "RunesAndSpells.Tests\RunesAndSpells.Tests.csproj", "{46D863D0-84A0-4F54-9FFC-1B27B8D43818}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runes and Spells", "..\Runes and Spells\Runes and Spells\Runes and Spells.csproj", "{E90A087B-CC77-47E5-B6E9-A0925C91A077}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runes and Spells", "..\Runes and Spells\Runes and Spells.csproj", "{BDFA2601-841F-4682-92E5-C766AF614B25}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{46D863D0-84A0-4F54-9FFC-1B27B8D43818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46D863D0-84A0-4F54-9FFC-1B27B8D43818}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46D863D0-84A0-4F54-9FFC-1B27B8D43818}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46D863D0-84A0-4F54-9FFC-1B27B8D43818}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E90A087B-CC77-47E5-B6E9-A0925C91A077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E90A087B-CC77-47E5-B6E9-A0925C91A077}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E90A087B-CC77-47E5-B6E9-A0925C91A077}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E90A087B-CC77-47E5-B6E9-A0925C91A077}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDFA2601-841F-4682-92E5-C766AF614B25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDFA2601-841F-4682-92E5-C766AF614B25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDFA2601-841F-4682-92E5-C766AF614B25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDFA2601-841F-4682-92E5-C766AF614B25}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
