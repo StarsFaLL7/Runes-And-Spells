@@ -197,6 +197,9 @@ public class Game1 : Game
         Inventory.AddItem(new Item(AllGameItems.Paper), 2);
     }
 
+    public void ResetBackStory() => _backStoryScreen.Reset();
+    
+
     public void SetMusicVolume(float volume) => MediaPlayer.Volume = volume;
     
     public void SetSoundsVolume(float volume) => SoundEffect.MasterVolume = volume;

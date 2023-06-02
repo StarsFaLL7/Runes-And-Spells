@@ -118,6 +118,7 @@ public class MainMenuScreen: IScreen
             new Vector2(1017, 495),
             () =>
             {
+                _game.ResetBackStory();
                 _game.SetScreen(GameScreen.Backstory);
                 MediaPlayer.Stop();
                 MediaPlayer.Play(_game.BackstoryMusic);
