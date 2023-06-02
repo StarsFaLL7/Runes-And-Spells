@@ -2,9 +2,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Runes_and_Spells.classes;
+namespace Runes_and_Spells.UiClasses;
 
-public class FadingTexture
+public class UiFadingTexture
 {
     public enum Mode
     {
@@ -16,12 +16,11 @@ public class FadingTexture
     private float _alpha;
     private float _modifier;
     private float _fadingTimeFrames;
-    // private Timer _fadingTimer;
     public Mode FadeMode { get; private set; }
     private Action _endAction;
     public bool IsFading { get; private set; }
 
-    public FadingTexture(Texture2D texture, float animationTimeSeconds, Mode mode, Action actionOnEnd = null)
+    public UiFadingTexture(Texture2D texture, float animationTimeSeconds, Mode mode, Action actionOnEnd = null)
     {
         _texture = texture;
         FadeMode = mode;

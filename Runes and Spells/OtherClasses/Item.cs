@@ -3,9 +3,10 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Runes_and_Spells.classes;
+using Runes_and_Spells.UiClasses;
+using Runes_and_Spells.UtilityClasses;
 
-namespace Runes_and_Spells;
+namespace Runes_and_Spells.OtherClasses;
 
 public class Item
 {

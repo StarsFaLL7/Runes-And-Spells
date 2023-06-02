@@ -1,29 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Runes_and_Spells.classes;
+using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.OtherClasses;
 using Runes_and_Spells.Screens;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells;
 
 public class Game1 : Game
 {
-
-    private readonly GraphicsDeviceManager _graphics;
-    public SpriteBatch SpriteBatch { get; private set; }
-    
+    public readonly GraphicsDeviceManager Graphics;
+    private SpriteBatch SpriteBatch { get; set; }
     private Drawer _drawer;
-    public SpriteFont LogText { get; private set; }
-    public SpriteFont HeadingText { get; private set; }
-    private GameScreen _currentScreen;
-    public void SetScreen(GameScreen newScreen) => _currentScreen = newScreen;
-
     private OverlayMenu _overlayMenu;
     private MainMenuScreen _mainMenu;
     private BackStoryScreen _backStoryScreen;
@@ -35,27 +28,36 @@ public class Game1 : Game
     private AltarScreen _altarScreen;
     private AltarRoomScreen _altarRoomScreen;
     private MarketScreen _marketScreen;
-    public Introduction Introduction { get; private set; }
     private Dictionary<GameScreen, IScreen> _allScreens;
+
+    public GameScreen CurrentScreen { get; private set; }
+    public void SetScreen(GameScreen newScreen) => CurrentScreen = newScreen;
+    public Introduction Introduction { get; private set; }
     public readonly Inventory Inventory;
     
     public Song MusicMenu { get; private set; }
     public List<Song> MusicsMainTheme { get; private set; }
-    private int _nextSongIndex = 1;
     public Song BackstoryMusic { get; private set; }
+    private int _nextSongIndex = 1;
     
     public int DayCount { get; private set; }
     public bool ClayClaimed;
     public int Balance { get; private set; }
+
     private bool _wasEscapePressed;
     private bool _isEscapePressed;
-
+    
+    public SpriteFont LogText { get; private set; }
+    
     public Game1()
     {
-        _graphics = new GraphicsDeviceManager(this);
+        Graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
-        
+        Graphics.PreferredBackBufferWidth = 1920;
+        Graphics.PreferredBackBufferHeight = 1080;
+        Graphics.IsFullScreen = true; //FullScreen-----------
+        Graphics.ApplyChanges();
         Inventory = new Inventory(this);
         Inventory.Initialize();
     }
@@ -64,10 +66,6 @@ public class Game1 : Game
     {
         MediaPlayer.Volume = 0.1f;
         SoundEffect.MasterVolume = 0.5f;
-        _graphics.PreferredBackBufferWidth = 1920;
-        _graphics.PreferredBackBufferHeight = 1080;
-        _graphics.IsFullScreen = true; //FullScreen-----------
-        _graphics.ApplyChanges();
         _drawer = new Drawer();
         _overlayMenu = new OverlayMenu(this);
         _mainMenu = new MainMenuScreen(this);
@@ -109,11 +107,10 @@ public class Game1 : Game
         Introduction.LoadContent(Content);
         SpriteBatch = new SpriteBatch(GraphicsDevice);
         LogText = Content.Load<SpriteFont>("logText");
-        HeadingText = Content.Load<SpriteFont>("headingsText");
-        Inventory.LoadContent(Content, _graphics);
+        Inventory.LoadContent(Content, Graphics);
         foreach (var screen in _allScreens.Values)
         {
-            screen.LoadContent(Content, _graphics);
+            screen.LoadContent(Content, Graphics);
         }
         _overlayMenu.LoadContent(Content);
         MusicMenu = Content.Load<Song>("music/mainMenuMusic");
@@ -132,7 +129,7 @@ public class Game1 : Game
         
         if (!_overlayMenu.IsVisible)
         {
-            _allScreens[_currentScreen].Update(_graphics);
+            _allScreens[CurrentScreen].Update(Graphics);
             if (_altarScreen.IsCraftingInProgress)
                 _altarScreen.UpdateInBackground();
             
@@ -156,7 +153,7 @@ public class Game1 : Game
     {
         _wasEscapePressed = _isEscapePressed;
         _isEscapePressed = Keyboard.GetState().IsKeyDown(Keys.Escape);
-        if (!_wasEscapePressed && _isEscapePressed && _currentScreen != GameScreen.Menu)
+        if (!_wasEscapePressed && _isEscapePressed && CurrentScreen != GameScreen.Menu)
         {
             _overlayMenu.Reset();
             _overlayMenu.IsVisible = !_overlayMenu.IsVisible;
@@ -169,7 +166,7 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(Color.White);
         SpriteBatch.Begin();
-        _allScreens[_currentScreen].Draw(_graphics, SpriteBatch, _drawer);
+        _allScreens[CurrentScreen].Draw(Graphics, SpriteBatch, _drawer);
         
         if (_overlayMenu.IsVisible) _overlayMenu.Draw(SpriteBatch);
         
@@ -187,7 +184,7 @@ public class Game1 : Game
         ClayClaimed = false;
         if (DayCount % 7 == 0)
         {
-            AllGameItems.MakeBigChangesToPrices();
+            AllGameItems.ResetAllScrollsPrices();
             _marketScreen.FillSellSlots();
         }
     }

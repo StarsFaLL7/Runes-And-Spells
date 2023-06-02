@@ -7,6 +7,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Runes_and_Spells.classes;
+using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.UiClasses;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.Screens;
 
@@ -131,12 +134,20 @@ public class MarketScreen : IScreen
     {
         for (var i = 0; i < 5; i++)
         {
-            var item = AllGameItems.UnknownRunes.ElementAt(Random.Shared.Next(AllGameItems.UnknownRunes.Count));
+            var unknownRunes1 = AllGameItems.UnknownRunes
+                .Where(r => 
+                    r.Value.ID != "rune_unknown_failed" && 
+                    r.Value.ID.Split('_')[3] == "1")
+                .ToArray();
+            var item = unknownRunes1[Random.Shared.Next(unknownRunes1.Length)];
             SellingSlots[i].SetItem(item.Value, Random.Shared.Next(20, 40));
         }
         for (var i = 5; i < 10; i++)
         {
-            var item = AllGameItems.FinishedRunes.ElementAt(Random.Shared.Next(AllGameItems.FinishedRunes.Count));
+            var runes1 = AllGameItems.FinishedRunes
+                .Where(r => r.Value.ID.Split('_')[3] == "1")
+                .ToArray();
+            var item = runes1[Random.Shared.Next(runes1.Length)];
             SellingSlots[i].SetItem(item.Value, Random.Shared.Next(40, 60));
         }
         SellingSlots[10].SetItem(AllGameItems.Clay, Random.Shared.Next(15, 20), Random.Shared.Next(5, 10));

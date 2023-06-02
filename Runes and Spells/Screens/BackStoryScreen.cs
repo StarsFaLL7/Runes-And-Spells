@@ -5,6 +5,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Runes_and_Spells.classes;
+using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.UiClasses;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.Screens;
 
@@ -13,17 +16,17 @@ public class BackStoryScreen : IScreen
     private readonly Game1 _game;
     public BackStoryScreen(Game1 game) => _game = game;
     private Texture2D _dialogBoxTexture;
-    private FadingTexture _textureForestDay;
-    private FadingTexture _textureForestLake;
-    private FadingTexture _textureForestEvening;
-    private FadingTexture _textureForestWithHouse;
-    private FadingTexture _textureInsideHouse;
+    private UiFadingTexture _textureForestDay;
+    private UiFadingTexture _textureForestLake;
+    private UiFadingTexture _textureForestEvening;
+    private UiFadingTexture _textureForestWithHouse;
+    private UiFadingTexture _textureInsideHouse;
     private UiButton _buttonNextScene;
     private SpriteFont _font;
     private const float FadeTime = 1f;
     
     private bool _isElementFocused;
-    private List<(FadingTexture background, string dialog)> _scenes;
+    private List<(UiFadingTexture background, string dialog)> _scenes;
     private int _currentScene;
     public void Initialize()
     {
@@ -56,27 +59,27 @@ public class BackStoryScreen : IScreen
             });
         _dialogBoxTexture = content.Load<Texture2D>("textures/backstory_screen/dialog_box_empty");
 
-        _textureForestLake = new FadingTexture(
+        _textureForestLake = new UiFadingTexture(
             content.Load<Texture2D>("textures/backstory_screen/forest_lake"),
-            FadeTime, FadingTexture.Mode.FadeOut);
+            FadeTime, UiFadingTexture.Mode.FadeOut);
         
-        _textureForestEvening = new FadingTexture(
+        _textureForestEvening = new UiFadingTexture(
             content.Load<Texture2D>("textures/backstory_screen/forest_evening"),
-            FadeTime, FadingTexture.Mode.FadeIn);
+            FadeTime, UiFadingTexture.Mode.FadeIn);
         
-        _textureForestDay = new FadingTexture(
+        _textureForestDay = new UiFadingTexture(
             content.Load<Texture2D>("textures/backstory_screen/bg_forest_day"),
-            FadeTime*2, FadingTexture.Mode.FadeIn);
+            FadeTime*2, UiFadingTexture.Mode.FadeIn);
         
-        _textureForestWithHouse = new FadingTexture(
+        _textureForestWithHouse = new UiFadingTexture(
             content.Load<Texture2D>("textures/backstory_screen/house_in_forest"),
-            FadeTime, FadingTexture.Mode.FadeIn);
+            FadeTime, UiFadingTexture.Mode.FadeIn);
         
-        _textureInsideHouse = new FadingTexture(
+        _textureInsideHouse = new UiFadingTexture(
             content.Load<Texture2D>("textures/main_house_screen/background"), 
-            FadeTime, FadingTexture.Mode.FadeIn);
+            FadeTime, UiFadingTexture.Mode.FadeIn);
         
-        _scenes = new List<(FadingTexture background, string dialog)>()
+        _scenes = new List<(UiFadingTexture background, string dialog)>()
         {
             (_textureForestLake, texts[0]),
             (_textureForestEvening, texts[1]),
@@ -116,10 +119,6 @@ public class BackStoryScreen : IScreen
         var y = 756 + _dialogBoxTexture.Height / 2 - _font.MeasureString(_scenes[_currentScene].dialog).Y / 2;
         spriteBatch.DrawString(_font, _scenes[_currentScene].dialog, new Vector2(332, y), new Color(57, 44,27));
         _buttonNextScene.Draw(spriteBatch);
-        
-        spriteBatch.DrawString(_game.LogText, $"Is object focused: {_isElementFocused}\n" +
-                                              $"Button IsPressed: {_buttonNextScene.IsPressed}\n" +
-                                              $"Button IsHovered: {_buttonNextScene.IsHovered}", new Vector2(0,0), Color.Black);
     }
 
     private List<string> texts = new ()

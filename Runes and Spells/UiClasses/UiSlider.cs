@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Runes_and_Spells;
+namespace Runes_and_Spells.UiClasses;
 
 public class UiSlider
 {
@@ -70,5 +70,5 @@ public class UiSlider
         spriteBatch.Draw(HolderTexture, GetHolderPosition(), Color.White);
     }
 
-    public void SetValue(float value) => MathHelper.Clamp(value, _minValue, _maxValue);
+    public void SetValue(float value) => Value = MathHelper.Clamp(value, _minValue, _maxValue);
 }

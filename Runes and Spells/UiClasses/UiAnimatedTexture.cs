@@ -1,10 +1,11 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Runes_and_Spells.UtilityClasses;
 
-namespace Runes_and_Spells.classes;
+namespace Runes_and_Spells.UiClasses;
 
-public class AnimatedTexture
+public class UiAnimatedTexture
 {
     private Texture2D _spritesheet;
     private Timer _animTimer;
@@ -13,7 +14,7 @@ public class AnimatedTexture
     private int _framesCount;
     private bool _isLoop;
     
-    public AnimatedTexture(int msBetweenFrames, Texture2D spriteSheet, Vector2 frameSize, bool isLoop)
+    public UiAnimatedTexture(int msBetweenFrames, Texture2D spriteSheet, Vector2 frameSize, bool isLoop)
     {
         _isLoop = isLoop;
         _spritesheet = spriteSheet;

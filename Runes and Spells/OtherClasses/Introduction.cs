@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Runes_and_Spells.UiClasses;
 
 namespace Runes_and_Spells.classes;
 
@@ -14,7 +15,7 @@ public class Introduction
     private List<Vector2> _selectorListPositions;
     private Vector2 _selectorPosition;
     private List<string> AllTexts;
-    private AnimatedTexture _selectorTexture;
+    private UiAnimatedTexture _selectorTexture;
     private Texture2D _textBackTexture;
     private SpriteFont _font;
     private UiButton _buttonSkipIntro;
@@ -32,7 +33,7 @@ public class Introduction
     {
         _font = content.Load<SpriteFont>("16PixelTimes24px");
         _textBackTexture = content.Load<Texture2D>("textures/intro/back");
-        _selectorTexture = new AnimatedTexture(100, 
+        _selectorTexture = new UiAnimatedTexture(100, 
             content.Load<Texture2D>("textures/intro/selector"), 
             new Vector2(96, 96), true);
         _buttonSkipIntro = new UiButton(

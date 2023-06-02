@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace Runes_and_Spells;
+namespace Runes_and_Spells.UtilityClasses;
 
 public class Timer
 {
     public float Time { get; private set; }
-    public Action Action { get; private set; }
+    private Action Action { get; set; }
     public bool IsRunning { get; private set; }
-    public float DefaultStartTime { get; private set; }
+    private float DefaultStartTime { get; set; }
 
     public Timer(float defaultMilliseconds, Action actionOnEnd)
     {

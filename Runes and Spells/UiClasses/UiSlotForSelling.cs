@@ -1,9 +1,11 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Runes_and_Spells.classes;
+using Runes_and_Spells.OtherClasses;
+using Runes_and_Spells.UtilityClasses;
 
-namespace Runes_and_Spells.classes;
+namespace Runes_and_Spells.UiClasses;
 
 public class UiSlotForSelling
 {
@@ -11,7 +13,6 @@ public class UiSlotForSelling
     private Rectangle _rectangle;
     private Vector2 Position { get; set; }
     public int Price { get; private set; }
-    private bool IsHovered { get; set; }
     private bool IsPressed { get; set; }
     private readonly Texture2D _slotTexture;
     private Texture2D _slotBorderTexture;
@@ -40,7 +41,6 @@ public class UiSlotForSelling
                 if (_count <= 0)
                     Clear();
             }
-            IsHovered = false;
             IsPressed = false;
         }
             
@@ -51,15 +51,12 @@ public class UiSlotForSelling
             
         if (_rectangle.Contains(mouseState.X, mouseState.Y) && !isAnotherObjectFocused)
         {
-            IsHovered = true;
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
                 IsPressed = true;
                 isAnotherObjectFocused = true;
             }
         }
-        else
-            IsHovered = false;
     }
 
     private void Clear()

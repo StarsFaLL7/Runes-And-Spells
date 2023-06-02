@@ -3,13 +3,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Runes_and_Spells.classes;
+namespace Runes_and_Spells.UtilityClasses;
 
 public class Writer
 {
     private Dictionary<char, Texture2D> _textures;
-    private int symbWidth;
-    private int symbHeight;
+    private readonly int _symbWidth;
+    private readonly int _symbHeight;
     
     public Writer(ContentManager content)
     {
@@ -18,8 +18,8 @@ public class Writer
         {
             _textures.Add((char)i, content.Load<Texture2D>($"textures/font/{(char)i}"));
         }
-        symbHeight = _textures['a'].Height;
-        symbWidth = _textures['a'].Width;
+        _symbHeight = _textures['a'].Height;
+        _symbWidth = _textures['a'].Width;
     }
     
     public void DrawString(string text, Rectangle box, SpriteBatch spriteBatch)
@@ -32,12 +32,12 @@ public class Writer
             {
                 if (_textures.ContainsKey(symb))
                     spriteBatch.Draw(_textures[symb], currentPosition, Color.White);
-                currentPosition.X += symbWidth;
+                currentPosition.X += _symbWidth;
             }
-            currentPosition.X += symbWidth;
-            if (currentPosition.X + symbWidth * (1 + word.Length) > box.Right)
+            currentPosition.X += _symbWidth;
+            if (currentPosition.X + _symbWidth * (1 + word.Length) > box.Right)
             {
-                currentPosition.Y += symbHeight;
+                currentPosition.Y += _symbHeight;
                 currentPosition.X = box.Left;
             }
         }
@@ -48,9 +48,9 @@ public class Writer
         var currentPosition = new Vector2(box.Left, box.Top);
         foreach (var word in words)
         {
-            if (currentPosition.X + symbWidth * word.Length > box.Right)
+            if (currentPosition.X + _symbWidth * word.Length > box.Right)
             {
-                currentPosition.Y += symbHeight;
+                currentPosition.Y += _symbHeight;
                 currentPosition.X = box.Left;
             }
             
@@ -58,9 +58,9 @@ public class Writer
             {
                 if (_textures.ContainsKey(symb))
                     spriteBatch.Draw(_textures[symb], currentPosition, color);
-                currentPosition.X += symbWidth;
+                currentPosition.X += _symbWidth;
             }
-            currentPosition.X += symbWidth;
+            currentPosition.X += _symbWidth;
         }
     }
 }

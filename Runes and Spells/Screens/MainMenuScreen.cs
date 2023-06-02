@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.UiClasses;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.Screens;
 
@@ -181,11 +184,6 @@ public class MainMenuScreen: IScreen
                 DrawTabOptions(spriteBatch);
                 break;
         }
-        
-        spriteBatch.DrawString(_game.LogText, $"Music volume: {_sliderMusicVolume.Value}\n" +
-                                              $"Effects volume: {_sliderEffectsVolume.Value}\n" +
-                                              $"Menu tab: {_currentTab}\n" +
-                                              $"Is object focused: {_oneElementIsFocused}\n", new Vector2(0,0), Color.White);
     }
     
     private void DrawTabOptions(SpriteBatch spriteBatch)

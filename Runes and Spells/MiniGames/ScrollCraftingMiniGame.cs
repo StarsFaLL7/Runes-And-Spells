@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Runes_and_Spells.UiClasses;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.classes;
 

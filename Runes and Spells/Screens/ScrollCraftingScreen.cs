@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Runes_and_Spells.classes;
+using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.UiClasses;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.Screens;
 
@@ -140,7 +143,7 @@ public class ScrollCraftingScreen : IScreen
         spriteBatch.Draw(_recipeBookBackTexture, new Vector2(331, 276), Color.White);
         var x = 337;
         var y = 307;
-        foreach (var recipe in AllGameItems.ScrollsRecipes.Where(s => s.Value.isVisible).Take((_RecipeBookPage+1)*14))
+        foreach (var recipe in AllGameItems.ScrollsRecipesTextures.Where(s => s.Value.isVisible).Take((_RecipeBookPage+1)*14))
         {
             spriteBatch.Draw(recipe.Value.Texture, new Vector2(x, y), Color.White);
             y += recipe.Value.Texture.Height + 12;

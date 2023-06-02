@@ -5,6 +5,10 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Runes_and_Spells.classes;
+using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.OtherClasses;
+using Runes_and_Spells.UiClasses;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.Screens;
 
@@ -22,8 +26,8 @@ public class MainHouseScreen : IScreen
     private bool _isButtonFocused;
     private UiButton _buttonScreenAltar;
     private UiButton _buttonScreenOutside;
-    private AnimatedTexture _animatedClock;
-    private FadingTexture _sleepingBg;
+    private UiAnimatedTexture _uiAnimatedClock;
+    private UiFadingTexture _sleepingBg;
     private bool _isSleeping;
     private Timer _sleepTimer;
     
@@ -111,28 +115,28 @@ public class MainHouseScreen : IScreen
                 if (_game.Introduction.IsPlaying && _game.Introduction.Step == 24) _game.Introduction.Step = 25;
                 _game.SetScreen(GameScreen.OutdoorScreen);
             } );
-        _animatedClock = new AnimatedTexture(
+        _uiAnimatedClock = new UiAnimatedTexture(
             200, 
             content.Load<Texture2D>("textures/animated/clock"),
             new Vector2(192, 192), 
             true);
-        _sleepingBg = new FadingTexture(content.Load<Texture2D>("textures/backgrounds/sleeping"),
+        _sleepingBg = new UiFadingTexture(content.Load<Texture2D>("textures/backgrounds/sleeping"),
             3,
-            FadingTexture.Mode.FadeIn,
+            UiFadingTexture.Mode.FadeIn,
             () => {
-                if (_sleepingBg.FadeMode == FadingTexture.Mode.FadeIn)
+                if (_sleepingBg.FadeMode == UiFadingTexture.Mode.FadeIn)
                     _isSleeping = true;
                 else
-                    _sleepingBg.Reset(FadingTexture.Mode.FadeIn);
+                    _sleepingBg.Reset(UiFadingTexture.Mode.FadeIn);
                 _sleepTimer.StartWithTime(Random.Shared.Next(5000, 8000)); 
             }); 
 
         _sleepTimer = new Timer(Random.Shared.Next(5000, 8000), () =>
         {
             _isSleeping = false;
-            _sleepingBg.Reset(FadingTexture.Mode.FadeOut);
+            _sleepingBg.Reset(UiFadingTexture.Mode.FadeOut);
             _sleepingBg.StartFade();
-            _animatedClock.SetRandomFrame();
+            _uiAnimatedClock.SetRandomFrame();
         });
     }
 
@@ -184,7 +188,7 @@ public class MainHouseScreen : IScreen
         spriteBatch.Draw(_backgroundTexture, new Vector2(0, 0), Color.White);
         spriteBatch.Draw(_dayPanelTexture, Vector2.Zero, Color.White);
         var str = "День: " + _game.DayCount;
-        if (_sleepingBg.IsFading && _sleepingBg.FadeMode is FadingTexture.Mode.FadeIn)
+        if (_sleepingBg.IsFading && _sleepingBg.FadeMode is UiFadingTexture.Mode.FadeIn)
         {
             str = "День: " + (_game.DayCount - 1);
         }
@@ -199,7 +203,7 @@ public class MainHouseScreen : IScreen
         _sleepingBg.Draw(Vector2.Zero, spriteBatch);
         if (_isSleeping)
         {
-            _animatedClock.Draw(new Vector2(864, 444), spriteBatch);
+            _uiAnimatedClock.Draw(new Vector2(864, 444), spriteBatch);
             _sleepTimer.Tick();
         }
     }

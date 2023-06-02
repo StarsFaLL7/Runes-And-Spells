@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Runes_and_Spells.classes;
+namespace Runes_and_Spells.UtilityClasses;
 
 public static class CountDrawer
 {

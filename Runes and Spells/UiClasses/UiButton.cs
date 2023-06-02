@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Runes_and_Spells;
+namespace Runes_and_Spells.UiClasses;
 
 public class UiButton
 {
