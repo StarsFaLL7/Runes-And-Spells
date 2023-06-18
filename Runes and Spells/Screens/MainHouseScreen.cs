@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Input;
 using Runes_and_Spells.classes;
 using Runes_and_Spells.Interfaces;
 using Runes_and_Spells.OtherClasses;
+using Runes_and_Spells.TopDownGame.Core.Enums;
 using Runes_and_Spells.UiClasses;
 using Runes_and_Spells.UtilityClasses;
 
@@ -113,7 +114,8 @@ public class MainHouseScreen : IScreen
             {
                 if (_game.Introduction.IsPlaying && _game.Introduction.Step == 0) _game.Introduction.Step = 1;
                 if (_game.Introduction.IsPlaying && _game.Introduction.Step == 24) _game.Introduction.Step = 25;
-                _game.SetScreen(GameScreen.OutdoorScreen);
+                _game.IsInTopDownView = true;
+                _game.TopDownCore.PlayerLastLookDirection = Direction.Left;
             } );
         _uiAnimatedClock = new UiAnimatedTexture(
             200, 
@@ -183,7 +185,7 @@ public class MainHouseScreen : IScreen
         }
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_backgroundTexture, new Vector2(0, 0), Color.White);
         spriteBatch.Draw(_dayPanelTexture, Vector2.Zero, Color.White);

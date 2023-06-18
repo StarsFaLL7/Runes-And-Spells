@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Runes_and_Spells.Content.data;
 using Runes_and_Spells.UiClasses;
 using Runes_and_Spells.UtilityClasses;
 
@@ -36,15 +37,15 @@ public class ScrollCraftingMiniGame
     
     private Dictionary<string, string> _wordsSpecial = new()
     {
-        {"water", "voco aquam"},
-        {"ice", "voco glacies"},
-        {"grass", "terra auxilo"},
-        {"fire", "potestas ignis"},
-        {"blood", "sanguis magicae"},
-        {"distorted", "corrupto veniam"},
-        {"black", "auxo tenebrae"},
-        {"air", "aer liberate"},
-        {"moon", "lunae magicae"}
+        {"water", "aquam"},
+        {"ice", "glacies"},
+        {"grass", "terra"},
+        {"fire", "ignis"},
+        {"blood", "sanguis"},
+        {"distorted", "corrupto"},
+        {"black", "tenebrae"},
+        {"air", "aer"},
+        {"moon", "lunae"}
     };
     
     private string[] _wordsOther = new[]
@@ -203,11 +204,13 @@ public class ScrollCraftingMiniGame
     {
         if (_game.Introduction.IsPlaying && _game.Introduction.Step == 22) _game.Introduction.Step = 23;
         IsActive = false;
-        if (AllGameItems.TryToGetScrollByRunes(out var scroll, _inputSlot1.currentItem, _inputSlot2.currentItem))
+        if (AllGameItems.TryToGetScrollByRunes(out var scroll, out var scrollInfo, _inputSlot1.currentItem, _inputSlot2.currentItem))
         {
             _outputSlot.SetItem(scroll);
             _inputSlot1.Clear();
             _inputSlot2.Clear();
+            
+            AllGameItems.TryToUnlockScrollRecipe(scrollInfo);
         }
         Reset();
     }

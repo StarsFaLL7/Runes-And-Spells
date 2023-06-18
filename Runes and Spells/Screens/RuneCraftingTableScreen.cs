@@ -140,7 +140,7 @@ public class RuneCraftingTableScreen : IScreen
         }
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_backgroundTexture, new Vector2(0, 0), Color.White);
         DrawRecipes(spriteBatch, new Vector2(90, 204));
@@ -155,7 +155,7 @@ public class RuneCraftingTableScreen : IScreen
         _miniGame.Draw(spriteBatch);
         _dropSlot.Draw(spriteBatch);
         _outputSlot.Draw(spriteBatch);
-        _game.Inventory.Draw(graphics, spriteBatch, drawer);
+        _game.Inventory.Draw(graphics, spriteBatch);
     }
 
     private void DrawRecipes(SpriteBatch spriteBatch, Vector2 startPosition)
@@ -166,13 +166,36 @@ public class RuneCraftingTableScreen : IScreen
         if (AllGameItems.KnownRunesCraftRecipes.Count > 10 * (1 + _recipeBookPage))
             _recipeNextPage.Draw(spriteBatch);
         var index = 0;
-        foreach (var recipe in AllGameItems.KnownRunesCraftRecipes.Values.Where(r => r.Size == 3).Skip(10*_recipeBookPage).Take(10))
+        foreach (var recipe in AllGameItems.KnownRunesCraftRecipes.Skip(10*_recipeBookPage).Take(10))
         {
-            var textureToDraw = recipe.IsFull ? recipe.FullTexture : recipe.HalfTexture;
-            spriteBatch.Draw(textureToDraw, new Vector2(
-                startPosition.X + 6 + 420 * (index / 5), 
-                startPosition.Y + 33 + (textureToDraw.Height + 16) * (index % 5)), Color.White);
+            var position = new Vector2(
+                startPosition.X + 2 + 414 * (index / 5),
+                startPosition.Y + 33 + (112 + 16) * (index % 5));
             index++;
+            spriteBatch.Draw(ItemsDataHolder.Runes.RecipesBack, new Vector2(position.X + 12, position.Y), Color.White);
+            var cellIndex = 0;
+            foreach (var cell in ItemsDataHolder.Runes.RunesCreateRecipes.First(p => p.Value == recipe.Key).Key)
+            {
+                spriteBatch.Draw(cell ? ItemsDataHolder.Runes.RecipeCellFull : ItemsDataHolder.Runes.RecipeCellEmpty, 
+                    new Vector2(position.X + 18 + cellIndex % 3 * 34, position.Y + 6 + cellIndex / 3 * 34), 
+                    Color.White);
+                cellIndex++;
+            }
+            spriteBatch.Draw(ItemsDataHolder.Runes.RecipeArrow,new Vector2(position.X + 130, position.Y + 38), Color.White);
+            position.X += 130 + ItemsDataHolder.Runes.RecipeArrow.Width;
+
+            var unknownRuneTexture = ItemsDataHolder.Runes.RecipeX64UnknownRunesTextures[recipe.Key.Split('_')[2]];
+            var rDeltaPosY = (ItemsDataHolder.Runes.RecipesBack.Height - unknownRuneTexture.Height) / 2;
+            
+            spriteBatch.Draw(unknownRuneTexture,new Vector2(position.X, position.Y + rDeltaPosY), Color.White);
+            
+            if (!recipe.Value) continue;
+            position.X += 64;
+            spriteBatch.Draw(ItemsDataHolder.Runes.RecipeArrow,new Vector2(position.X, position.Y + 38), Color.White);
+            spriteBatch.Draw(ItemsDataHolder.Runes.RecipeFire,new Vector2(position.X + 17, position.Y + 70), Color.White);
+            position.X += ItemsDataHolder.Runes.RecipeArrow.Width;
+            var finishRuneTexture = ItemsDataHolder.Runes.RecipeX64RunesTextures[recipe.Key.Replace("unknown_", "")];
+            spriteBatch.Draw(finishRuneTexture,new Vector2(position.X, position.Y + rDeltaPosY), Color.White);
         }
     }
 }

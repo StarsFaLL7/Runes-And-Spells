@@ -8,5 +8,6 @@ public enum ItemType
     Catalyst,
     Clay,
     ClaySmall,
-    Paper
+    Paper,
+    Key
 }

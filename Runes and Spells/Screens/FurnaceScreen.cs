@@ -91,7 +91,7 @@ public class FurnaceScreen : IScreen
         
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_backgroundTexture, new Vector2(0,0), Color.White);
         if (_miniGame.IsActive)
@@ -105,6 +105,6 @@ public class FurnaceScreen : IScreen
             if (_inputSlot.currentItem is not null && _inputSlot.currentItem.Type == ItemType.UnknownRune) _buttonStartMiniGame.Draw(spriteBatch);
         }
         _inputSlot.Draw(spriteBatch);
-        _game.Inventory.Draw(graphics, spriteBatch, drawer);
+        _game.Inventory.Draw(graphics, spriteBatch);
     }
 }

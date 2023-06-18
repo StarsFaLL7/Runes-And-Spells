@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Runes_and_Spells.classes;
+using Runes_and_Spells.Content.data;
 using Runes_and_Spells.Interfaces;
 using Runes_and_Spells.OtherClasses;
 using Runes_and_Spells.UiClasses;
@@ -57,7 +58,8 @@ public class OutdoorScreen : IScreen
                 {
                     _game.Introduction.Step = 26;
                     _game.Inventory.Clear();
-                    _game.Inventory.AddItem(new Item(AllGameItems.Scrolls["scroll_ocean_flow_1"]));
+                    AllGameItems.TryToGetScrollByRunes(out var scroll, out var scrollInfo, "rune_finished_water_1_1", "rune_finished_water_1_2");
+                    _game.Inventory.AddItem(scroll);
                 }
                 _game.SetScreen(GameScreen.TradingScreen);
             } );
@@ -129,7 +131,7 @@ public class OutdoorScreen : IScreen
         }
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_background, Vector2.Zero, Color.White);
         if (!_game.ClayClaimed)

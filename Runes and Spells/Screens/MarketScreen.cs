@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Runes_and_Spells.classes;
 using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.TopDownGame.Core.Enums;
 using Runes_and_Spells.UiClasses;
 using Runes_and_Spells.UtilityClasses;
 
@@ -81,14 +82,20 @@ public class MarketScreen : IScreen
             () =>
             {
                 if (_game.Introduction.IsPlaying && _game.Introduction.Step == 28) _game.Introduction.Step = 29;
-                _game.SetScreen(GameScreen.OutdoorScreen);
+                _game.IsInTopDownView = true;
+                _game.TopDownCore.PlayerLastLookDirection = Direction.Down;
             } );
         _buttonSellItem = new UiButton(
             content.Load<Texture2D>("textures/market_screen/button_sell_default"),
             content.Load<Texture2D>("textures/market_screen/button_sell_hovered"),
             content.Load<Texture2D>("textures/market_screen/button_sell_pressed"),
             new Vector2(489, 410),
-            () => SellItem(AllGameItems.SellingScrollsPrices[_inputSellSlot.currentItem.ID.Split('_')[1]]) );
+            () =>
+            {
+                Enum.TryParse<ScrollType>(_inputSellSlot.currentItem.ID.Split('_')[4],true, out var type);
+                SellItem(AllGameItems.SellingScrollsPrices[type] + 
+                         (int.Parse(_inputSellSlot.currentItem.ID.Split('_')[5])-1)*20);
+            } );
         _buttonStartTrade = new UiButton(
             content.Load<Texture2D>("textures/market_screen/button_trade_default"),
             content.Load<Texture2D>("textures/market_screen/button_trade_hovered"),
@@ -150,8 +157,12 @@ public class MarketScreen : IScreen
             var item = runes1[Random.Shared.Next(runes1.Length)];
             SellingSlots[i].SetItem(item.Value, Random.Shared.Next(40, 60));
         }
+        
         SellingSlots[10].SetItem(AllGameItems.Clay, Random.Shared.Next(15, 20), Random.Shared.Next(5, 10));
-        SellingSlots[11].SetItem(AllGameItems.Paper, Random.Shared.Next(10, 15), Random.Shared.Next(15, 20));
+        SellingSlots[11].SetItem(AllGameItems.Paper, Random.Shared.Next(10, 15), Random.Shared.Next(10, 20));
+        SellingSlots[12].SetItem(ItemsDataHolder.OtherItems.KeySilver, Random.Shared.Next(10, 25), Random.Shared.Next(7, 15));
+        SellingSlots[13].SetItem(ItemsDataHolder.OtherItems.KeyGold, Random.Shared.Next(30, 50), Random.Shared.Next(3, 7));
+
     }
 
     public void Update(GraphicsDeviceManager graphics)
@@ -186,7 +197,12 @@ public class MarketScreen : IScreen
         _minigame.Update();
         var kb = Keyboard.GetState();
         if ((_minigame.Score is >= 3500 or <= -2500 || kb.IsKeyDown(Keys.Space) || kb.IsKeyDown(Keys.Enter)) && _minigame.IsRunning)
-            SellItem(AllGameItems.SellingScrollsPrices[_inputSellSlot.currentItem.ID.Split('_')[1]] + _minigame.Stop());
+        {
+            Enum.TryParse<ScrollType>(_inputSellSlot.currentItem.ID.Split('_')[4],true, out var type);
+            SellItem(AllGameItems.SellingScrollsPrices[type] + 
+                     (int.Parse(_inputSellSlot.currentItem.ID.Split('_')[5])-1)*20 + _minigame.Stop()
+                     );
+        }
     }
 
     private void SellItem(int price)
@@ -198,7 +214,7 @@ public class MarketScreen : IScreen
         _inputSellSlot.Clear();
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_background, Vector2.Zero, Color.White);
         spriteBatch.Draw(_woodPanel, new Vector2(60, 191), Color.White);
@@ -216,7 +232,7 @@ public class MarketScreen : IScreen
         
         _minigame.Draw(spriteBatch, _font30Px);
 
-        _game.Inventory.Draw(graphics, spriteBatch, drawer);
+        _game.Inventory.Draw(graphics, spriteBatch);
     }
 
     private void DrawScrollsPrices(SpriteBatch spriteBatch)
@@ -224,10 +240,10 @@ public class MarketScreen : IScreen
         var x = 301;
         foreach (var scrollPrice in AllGameItems.SellingScrollsPrices.OrderBy(s => s.Value))
         {
-            spriteBatch.Draw(AllGameItems.ScrollsTypes[scrollPrice.Key].texture2D, new Vector2(x, 0), Color.White);
+            spriteBatch.Draw(AllGameItems.ScrollsTypesInfo[scrollPrice.Key].texture2D, new Vector2(x, 0), Color.White);
             var stringSize = _font30Px.MeasureString(scrollPrice.Value.ToString());
             spriteBatch.DrawString(_font30Px, scrollPrice.Value.ToString(), 
-                new Vector2(x+AllGameItems.ScrollsTypes[scrollPrice.Key].texture2D.Width/2 - stringSize.X/2, 69),
+                new Vector2(x+AllGameItems.ScrollsTypesInfo[scrollPrice.Key].texture2D.Width/2 - stringSize.X/2, 69),
                 _darkColor);
             x += 123;
         }

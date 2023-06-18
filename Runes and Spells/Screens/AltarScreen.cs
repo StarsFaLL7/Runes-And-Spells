@@ -119,7 +119,7 @@ public class AltarScreen : IScreen
             FinishCraft();
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_backgroundTexture, Vector2.Zero, Color.White);
         spriteBatch.Draw(_arrowDownTexture, new Vector2(1112, 309), Color.White);
@@ -136,7 +136,7 @@ public class AltarScreen : IScreen
         
         DrawRecipes(spriteBatch);
         
-        _game.Inventory.Draw(graphics, spriteBatch, drawer);
+        _game.Inventory.Draw(graphics, spriteBatch);
     }
 
     private void StartCraft()

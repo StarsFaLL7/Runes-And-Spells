@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -8,15 +9,19 @@ using Runes_and_Spells.classes;
 using Runes_and_Spells.Interfaces;
 using Runes_and_Spells.OtherClasses;
 using Runes_and_Spells.Screens;
+using Runes_and_Spells.TopDownGame.Core;
 using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells;
 
 public class Game1 : Game
 {
+    public const int ScreenWidth = 1920;
+    public const int ScreenHeight = 1080;
+
     public readonly GraphicsDeviceManager Graphics;
     private SpriteBatch SpriteBatch { get; set; }
-    private Drawer _drawer;
+    //public Drawer _drawer;
     private OverlayMenu _overlayMenu;
     private MainMenuScreen _mainMenu;
     private BackStoryScreen _backStoryScreen;
@@ -28,17 +33,25 @@ public class Game1 : Game
     private AltarScreen _altarScreen;
     private AltarRoomScreen _altarRoomScreen;
     private MarketScreen _marketScreen;
+    private EndingScreen _endingScreen;
     private Dictionary<GameScreen, IScreen> _allScreens;
+    private Texture2D _cursorTexture;
 
+    public TopDownCore TopDownCore { get; private set; }
+    
     public GameScreen CurrentScreen { get; private set; }
     public void SetScreen(GameScreen newScreen) => CurrentScreen = newScreen;
+
+    public bool IsInTopDownView = false; // ИГРОК НА УЛИЦЕ
+    
     public Introduction Introduction { get; private set; }
     public readonly Inventory Inventory;
     
     public Song MusicMenu { get; private set; }
+    public Song FinalSong { get; set; }
     public List<Song> MusicsMainTheme { get; private set; }
     public Song BackstoryMusic { get; private set; }
-    private int _nextSongIndex = 1;
+    public int NextSongIndex { get; private set; } = 1;
     
     public int DayCount { get; private set; }
     public bool ClayClaimed;
@@ -60,13 +73,27 @@ public class Game1 : Game
         Graphics.ApplyChanges();
         Inventory = new Inventory(this);
         Inventory.Initialize();
+        Activated += ActivateGame;
+        Deactivated += DeactivateGame;
+    }
+
+    private void DeactivateGame(object sender, EventArgs e)
+    {
+        MediaPlayer.Pause();
+    }
+
+    private void ActivateGame(object sender, EventArgs e)
+    {
+        MediaPlayer.Resume();
     }
 
     protected override void Initialize()
     {
         MediaPlayer.Volume = 0.1f;
         SoundEffect.MasterVolume = 0.5f;
-        _drawer = new Drawer();
+
+        TopDownCore = new TopDownCore(Content, this);
+        
         _overlayMenu = new OverlayMenu(this);
         _mainMenu = new MainMenuScreen(this);
         _backStoryScreen = new BackStoryScreen(this);
@@ -79,6 +106,7 @@ public class Game1 : Game
         _altarScreen = new AltarScreen(this);
         _marketScreen = new MarketScreen(this);
         Introduction = new Introduction(this);
+        _endingScreen = new EndingScreen(this);
         _allScreens = new Dictionary<GameScreen, IScreen>()
         {
             { GameScreen.Menu, _mainMenu },
@@ -90,7 +118,8 @@ public class Game1 : Game
             { GameScreen.OutdoorScreen, _outdoorScreen},
             { GameScreen.AltarScreen, _altarScreen},
             { GameScreen.AltarRoomScreen, _altarRoomScreen},
-            { GameScreen.TradingScreen, _marketScreen}
+            { GameScreen.TradingScreen, _marketScreen},
+            { GameScreen.EndingScreen, _endingScreen}
         };
         
         foreach (var screen in _allScreens.Values)
@@ -104,6 +133,9 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         AllGameItems.Initialize(Content);
+        TopDownCore.Initialize(Content);
+        _cursorTexture = Content.Load<Texture2D>("textures/cursor");
+        Mouse.SetCursor(MouseCursor.FromTexture2D(_cursorTexture, 0, 0));
         Introduction.LoadContent(Content);
         SpriteBatch = new SpriteBatch(GraphicsDevice);
         LogText = Content.Load<SpriteFont>("logText");
@@ -114,6 +146,7 @@ public class Game1 : Game
         }
         _overlayMenu.LoadContent(Content);
         MusicMenu = Content.Load<Song>("music/mainMenuMusic");
+        FinalSong = Content.Load<Song>("music/mainMenuMusic");
         BackstoryMusic = Content.Load<Song>("music/backstoryTheme");
         MusicsMainTheme = new List<Song>
         {
@@ -125,27 +158,39 @@ public class Game1 : Game
 
     protected override void Update(GameTime gameTime)
     {
+        if (_altarScreen.IsCraftingInProgress)
+            _altarScreen.UpdateInBackground();
+        
+        if (MediaPlayer.State == MediaState.Stopped)
+        {
+            MediaPlayer.Play(MusicsMainTheme[NextSongIndex]);
+            NextSongIndex++;
+            if (NextSongIndex >= MusicsMainTheme.Count)
+                NextSongIndex = 0;
+        }
+        
+        if (!IsActive) 
+        {
+            return;
+        }
+
         CheckForEscapePressed();
         
         if (!_overlayMenu.IsVisible)
         {
-            _allScreens[CurrentScreen].Update(Graphics);
-            if (_altarScreen.IsCraftingInProgress)
-                _altarScreen.UpdateInBackground();
-            
+            if (IsInTopDownView)
+                TopDownCore.Update();
+            else
+                _allScreens[CurrentScreen].Update(Graphics);
+
             if (Introduction.IsPlaying)
                 Introduction.Update();
+            
         }
         else
             _overlayMenu.Update();
 
-        if (MediaPlayer.State == MediaState.Stopped)
-        {
-            MediaPlayer.Play(MusicsMainTheme[_nextSongIndex]);
-            _nextSongIndex++;
-            if (_nextSongIndex >= MusicsMainTheme.Count)
-                _nextSongIndex = 0;
-        }
+        
         base.Update(gameTime);
     }
 
@@ -153,7 +198,7 @@ public class Game1 : Game
     {
         _wasEscapePressed = _isEscapePressed;
         _isEscapePressed = Keyboard.GetState().IsKeyDown(Keys.Escape);
-        if (!_wasEscapePressed && _isEscapePressed && CurrentScreen != GameScreen.Menu)
+        if (!_wasEscapePressed && _isEscapePressed && CurrentScreen != GameScreen.Menu && !TopDownCore.IsDialogOpened)
         {
             _overlayMenu.Reset();
             _overlayMenu.IsVisible = !_overlayMenu.IsVisible;
@@ -166,12 +211,17 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(Color.White);
         SpriteBatch.Begin();
-        _allScreens[CurrentScreen].Draw(Graphics, SpriteBatch, _drawer);
         
-        if (_overlayMenu.IsVisible) _overlayMenu.Draw(SpriteBatch);
+        if (IsInTopDownView)
+            TopDownCore.Draw(SpriteBatch);
+        else
+            _allScreens[CurrentScreen].Draw(Graphics, SpriteBatch);
         
         if (Introduction.IsPlaying)
             Introduction.Draw(SpriteBatch);
+        
+        if (_overlayMenu.IsVisible) _overlayMenu.Draw(SpriteBatch);
+        
         SpriteBatch.End();
         base.Draw(gameTime);
     }
@@ -179,7 +229,7 @@ public class Game1 : Game
     public void NextDay()
     {
         _altarScreen.SleepSkipCrafting();
-        AllGameItems.MakeSmallChangesToPrices();
+        AllGameItems.MakeSmallChangesToScrollPrices();
         DayCount += 1;
         ClayClaimed = false;
         if (DayCount % 7 == 0)
@@ -194,7 +244,9 @@ public class Game1 : Game
         Balance = 100;
         Inventory.Clear();
         Inventory.AddItem(new Item(AllGameItems.Clay), 10);
-        Inventory.AddItem(new Item(AllGameItems.Paper), 2);
+        Inventory.AddItem(new Item(AllGameItems.Paper), 3);
+        Inventory.AddItem(new Item(ItemsDataHolder.OtherItems.KeySilver), 5);
+        Inventory.AddItem(new Item(ItemsDataHolder.OtherItems.KeyGold), 1);
     }
 
     public void ResetBackStory() => _backStoryScreen.Reset();

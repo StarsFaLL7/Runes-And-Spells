@@ -21,20 +21,9 @@ public class Item
     public bool ShowToolTip { get; private set; }
     private bool _startHovered;
     private readonly Timer _hoverTimer;
-    
+
     public string ToolTipText { get; init; }
 
-    /*public Item(ItemType type, Texture2D texture, string id, string toolTipText)
-    {
-        Type = type;
-        Texture = texture;
-        ID = id;
-        Count = 1;
-        _canBeDragged = true;
-        _hoverTimer = new Timer(AllGameItems.HoverTime, () => { ShowToolTip = true; });
-        ToolTipText = toolTipText;
-    }*/
-    
     public Item(ItemType type, Texture2D texture, string id, string toolTipText, int count = 1)
     {
         Type = type;
@@ -92,6 +81,11 @@ public class Item
                 _startHovered = true;
             }
             else _hoverTimer.Tick();
+
+            if (mouseState.RightButton == ButtonState.Pressed)
+            {
+                ShowToolTip = true;
+            }
         }
         else
         {

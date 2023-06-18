@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Runes_and_Spells.Interfaces;
+using Runes_and_Spells.TopDownGame.Objects;
 using Runes_and_Spells.UiClasses;
 using Runes_and_Spells.UtilityClasses;
 
@@ -104,6 +105,8 @@ public class MainMenuScreen: IScreen
                 if (_currentTab != MenuTab.Options)
                     _soundEffectPageFlip.Play();
                 _currentTab = MenuTab.Options;
+                _sliderMusicVolume.SetValue(MediaPlayer.Volume);
+                _sliderEffectsVolume.SetValue(SoundEffect.MasterVolume);
             });
         _buttonExitGame = new UiButton(
             content.Load<Texture2D>("textures/main_menu/ui/buttons/exit_simple"),
@@ -154,10 +157,10 @@ public class MainMenuScreen: IScreen
         switch (_currentTab)
         {
             case MenuTab.Options:
-                _game.SetMusicVolume(_sliderMusicVolume.Value);
-                _game.SetSoundsVolume(_sliderEffectsVolume.Value);
                 _sliderEffectsVolume.Update(mouseState, ref _oneElementIsFocused);
                 _sliderMusicVolume.Update(mouseState, ref _oneElementIsFocused);
+                _game.SetMusicVolume(_sliderMusicVolume.Value);
+                _game.SetSoundsVolume(_sliderEffectsVolume.Value);
                 break;
             case MenuTab.NewGame:
                 _buttonStartNewGame.Update(mouseState, ref _oneElementIsFocused);
@@ -166,13 +169,17 @@ public class MainMenuScreen: IScreen
         UpdateClouds(graphics);
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
-        drawer.Draw(spriteBatch, graphics, _backgroundTexture, Position.TopLeft, null, 0f, 0f);
-        drawer.Draw(spriteBatch, graphics, _gameLogo, Position.MiddleTop, null, 0f, 0f);
+        spriteBatch.Draw(_backgroundTexture, new Vector2(0,0), Color.White);
+        
+        spriteBatch.Draw(_gameLogo, new Vector2((Game1.ScreenWidth-_gameLogo.Width)/2, 0), Color.White);
+        
         foreach (var cloudInfo in _clouds)
-            drawer.Draw(spriteBatch, graphics, cloudInfo.texture2D, Position.Custom, cloudInfo.position, 0f, 0f);
-        drawer.Draw(spriteBatch, graphics, _bookTexture, Position.Center, null, 0f, 0f);
+            spriteBatch.Draw(cloudInfo.texture2D, cloudInfo.position, Color.White);
+        spriteBatch.Draw(_bookTexture, new Vector2(
+            (Game1.ScreenWidth-_bookTexture.Width)/2,
+            (Game1.ScreenHeight-_bookTexture.Height)/2), Color.White);
         foreach (var button in _buttonsMainMenu)
             button.Draw(spriteBatch);
         
@@ -184,6 +191,9 @@ public class MainMenuScreen: IScreen
             case MenuTab.Options:
                 DrawTabOptions(spriteBatch);
                 break;
+            case MenuTab.Continue:
+                DrawTabLoadGame(spriteBatch);
+                break;
         }
     }
     
@@ -192,6 +202,14 @@ public class MainMenuScreen: IScreen
         _sliderMusicVolume.Draw(spriteBatch);
         _sliderEffectsVolume.Draw(spriteBatch);
         spriteBatch.Draw(_textOptions, new Vector2(1017,204), Color.White);
+    }
+
+    private void DrawTabLoadGame(SpriteBatch spriteBatch)
+    {
+        var str = "Данный раздел\nнаходится в разработке :)";
+        var size = AllMapDynamicObjects.DialogSpriteFont.MeasureString(str);
+        spriteBatch.DrawString(AllMapDynamicObjects.DialogSpriteFont, str, 
+            new Vector2(Game1.ScreenWidth/2+57, (Game1.ScreenHeight-_bookTexture.Height)/2 + 57), new Color(45, 36, 27));
     }
     
     private void DrawTabNewGame(SpriteBatch spriteBatch)

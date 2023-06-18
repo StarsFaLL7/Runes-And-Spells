@@ -38,6 +38,12 @@ public static class CountDrawer
         }
     }
 
+    public static Rectangle MeasureNumber(int number)
+    {
+        var numberStr = number.ToString();
+        return new Rectangle(0, 0, numberStr.Length * _textureWidth, _textureHeight);
+    }
+
     public static void Initialize(ContentManager content)
     {
         _textures = new Dictionary<char, Texture2D>();

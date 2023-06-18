@@ -1,6 +1,3 @@
-
-
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Runes_and_Spells.classes;
@@ -140,7 +137,7 @@ public class Tests
                 false, false, false
             });
         AllGameItems.SetRuneRecipeFull(id);
-        Assert.That(AllGameItems.KnownRunesCraftRecipes["grass_1_2"].IsFull);
+        Assert.That(AllGameItems.KnownRunesCraftRecipes["grass_1_2"]);
     }
 
     [Test]
@@ -176,7 +173,7 @@ public class Tests
     //[Test]
     public void ScrollsCraft()
     {
-        AllGameItems.TryToGetScrollByRunes(out var scroll,
+        AllGameItems.TryToGetScrollByRunes(out var scroll, out var scrollInfo,
             new Item(AllGameItems.FinishedRunes["rune_finished_water_1_1"]),
             new Item(AllGameItems.FinishedRunes["rune_finished_grass_1_1"]));
         Assert.That(scroll.Count == 1);

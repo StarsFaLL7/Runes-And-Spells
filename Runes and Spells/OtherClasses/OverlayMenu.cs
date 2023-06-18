@@ -64,6 +64,8 @@ public class OverlayMenu
             {
                 _isSettingsTab = true; 
                 _isPopupVisible = false;
+                SliderMusicVolume.SetValue(MediaPlayer.Volume);
+                SliderEffectsVolume.SetValue(SoundEffect.MasterVolume);
             }
             );
         _buttonExitToMenu = new UiButton(
@@ -115,6 +117,9 @@ public class OverlayMenu
                 MediaPlayer.Stop();
                 MediaPlayer.Play(_game.MusicMenu);
                 Reset();
+                _game.Introduction.Stop();
+                _game.Introduction.Step = 0;
+                _game.IsInTopDownView = false;
             }
         );
         
@@ -148,6 +153,8 @@ public class OverlayMenu
 
     public void Update()
     {
+        SliderMusicVolume.SetValue(MediaPlayer.Volume);
+        SliderEffectsVolume.SetValue(SoundEffect.MasterVolume);
         var mouseState = Mouse.GetState();
         if (_isPopupVisible)
         {

@@ -18,7 +18,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Runes and Spells\Runes and Spells.csproj" />
-      <ProjectReference Include="..\..\Runes and Spells\Runes and Spells\Runes and Spells.csproj" />
     </ItemGroup>
 
 </Project>

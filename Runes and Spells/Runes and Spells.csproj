@@ -8,7 +8,7 @@
     </PropertyGroup>
     <PropertyGroup>
         <ApplicationManifest>app.manifest</ApplicationManifest>
-        <ApplicationIcon>Icon.ico</ApplicationIcon>
+        <ApplicationIcon>icon.ico</ApplicationIcon>
     </PropertyGroup>
     <ItemGroup>
         <None Remove="Icon.ico" />
@@ -16,6 +16,7 @@
         <None Remove="Content\Recipes.json" />
         <None Remove="Content\recipes.txt" />
         <None Remove="Tests\**" />
+        <None Remove="Content\data\runes_recipes.txt" />
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="Icon.ico" />

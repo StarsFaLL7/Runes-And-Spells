@@ -103,7 +103,7 @@ public class BackStoryScreen : IScreen
         _buttonNextScene.Update(mouseState, ref _isElementFocused);
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         if (_currentScene > 0)
         {

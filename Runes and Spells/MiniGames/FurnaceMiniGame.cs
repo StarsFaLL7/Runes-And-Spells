@@ -119,7 +119,7 @@ public class FurnaceMiniGame
                         a.end >= _pointerPosition.X + _pointerTexture.Width/2);
             if (selectedArea.width != 0) 
             {
-                _progressBar.Add((_progressBar.MaxValue - _progressBar.MinValue) / (6 + _difficult*2));
+                _progressBar.Add((_progressBar.MaxValue - _progressBar.MinValue) / (4 + _difficult*2));
                 _successAreas.Remove(selectedArea);
                 while(_successAreas.Count < 3)
                     if (TryToGenerateArea(out var newArea, _successAreas)) _successAreas.Add(newArea);
@@ -128,7 +128,7 @@ public class FurnaceMiniGame
             {
                 if (_game.Introduction.IsPlaying) return;
                 
-                _progressBar.Subtract((_progressBar.MaxValue - _progressBar.MinValue) / (14 - _difficult*2));
+                _progressBar.Subtract((_progressBar.MaxValue - _progressBar.MinValue) / (12 - _difficult*2));
             }
         }
     }
@@ -181,7 +181,7 @@ public class FurnaceMiniGame
     public void Start(int difficult)
     {
         _difficult = difficult;
-        _pointerSpeed = 3 + (float)difficult / 2;
+        _pointerSpeed = 4 + (float)difficult * (3f / 4);
         _successAreas = GenerateAreas();
         IsActive = true;
         _inputSlot.Lock();

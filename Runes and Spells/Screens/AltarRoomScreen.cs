@@ -76,7 +76,7 @@ public class AltarRoomScreen : IScreen
         }
     }
 
-    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch, Drawer drawer)
+    public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         spriteBatch.Draw(_backgroundTexture, Vector2.Zero, Color.White);
         _buttonGoBack.Draw(spriteBatch);

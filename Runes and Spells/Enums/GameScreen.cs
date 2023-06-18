@@ -11,5 +11,6 @@ public enum GameScreen
     AltarRoomScreen,
     AltarScreen,
     OutdoorScreen,
-    TradingScreen
+    TradingScreen,
+    EndingScreen
 }

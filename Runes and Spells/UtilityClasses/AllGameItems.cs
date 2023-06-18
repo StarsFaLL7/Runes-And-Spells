@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Runes_and_Spells.Content.data;
 using Runes_and_Spells.OtherClasses;
 
 namespace Runes_and_Spells.UtilityClasses;
@@ -23,19 +25,14 @@ public static class AllGameItems
     public static Dictionary<string, ItemInfo> UnknownRunes => ItemsDataHolder.Runes.UnknownRunes;
     private static Dictionary<List<bool>, string> RunesCreateRecipes => ItemsDataHolder.Runes.RunesCreateRecipes;
     
-    public static Dictionary<string, (Texture2D texture2D, string rus)> ScrollsTypes =>
-        ItemsDataHolder.Scrolls.ScrollsTypes;
+    public static Dictionary<ScrollType, (Texture2D texture2D, string rus)> ScrollsTypesInfo =>
+        ItemsDataHolder.Scrolls.ScrollsTypesInfo;
     public static Dictionary<string, ItemInfo> Scrolls => ItemsDataHolder.Scrolls.AllScrolls;
-    private static Dictionary<string[], string> ScrollCraftRecipes => ItemsDataHolder.Scrolls.ScrollCraftRecipes;
-    public static Dictionary<string, (bool isVisible, Texture2D Texture)> ScrollsRecipesTextures => 
-        ItemsDataHolder.Scrolls.ScrollsRecipesTextures;
-    public static Dictionary<string, ItemInfo> Catalysts => ItemsDataHolder.Catalysts.AllCatalysts;
-
-    public static Dictionary<string, (int Size, bool IsFull, Texture2D HalfTexture, Texture2D FullTexture)>
-        KnownRunesCraftRecipes { get; private set; } = new();
+    public static List<ScrollsRecipes.ScrollInfo> KnownScrollsCraftRecipes { get; } = new ();
+    public static Dictionary<string, bool> KnownRunesCraftRecipes { get; } = new();
     public static Dictionary<(string mainRuneId, string secondaryRuneId), string> RuneUniteRecipes { get; } = new ();
 
-    public static Dictionary<string, int> SellingScrollsPrices { get; } = new ();
+    public static Dictionary<ScrollType, int> SellingScrollsPrices { get; } = new ();
 
     public static void Initialize(ContentManager content)
     {
@@ -47,20 +44,16 @@ public static class AllGameItems
 
     public static void ResetAllScrollsPrices()
     {
-        foreach (var type in ScrollsTypes.Keys.Where(k => k != "ancient"))
-            SellingScrollsPrices[type] = Random.Shared.Next(30, 70)/5*5;
+        foreach (var type in ScrollsTypesInfo.Keys)
+            SellingScrollsPrices[type] = Random.Shared.Next(30, 60)/5*5;
     }
     
-    public static void MakeSmallChangesToPrices()
+    public static void MakeSmallChangesToScrollPrices()
     {
         foreach (var price in SellingScrollsPrices)
         {
-            var modifier = Random.Shared.Next(-15, 15);
-            SellingScrollsPrices[price.Key] = price.Value + modifier >= 20 ?
-                price.Value + modifier <= 100 ? 
-                    price.Value + modifier 
-                    : 100 
-                : 20;
+            var modifier = Random.Shared.Next(-15, 10);
+            SellingScrollsPrices[price.Key] = Math.Min(Math.Max(price.Value + modifier, 20), 100);
         }
     }
 
@@ -75,45 +68,72 @@ public static class AllGameItems
                         return false;
                 return true;
             }).Value;
-        var runeId = resultId?[13..];
-        if (runeId is not null && !KnownRunesCraftRecipes.ContainsKey(runeId))
-        {
-            KnownRunesCraftRecipes.Add(runeId, (3, false,
-                _content.Load<Texture2D>($"textures/rune_crafting_table/recipes/recipe_{runeId}_half"),
-                _content.Load<Texture2D>($"textures/rune_crafting_table/recipes/recipe_{runeId}_full")));
-        }
-        return resultId ?? "rune_unknown_failed";
+        if (resultId is null)
+            return "rune_unknown_failed";
+        
+        UnlockRuneCraftRecipe(resultId);
+        
+        return resultId;
+    }
+
+    public static void UnlockRuneCraftRecipe(string runeId)
+    {
+        if (!KnownRunesCraftRecipes.ContainsKey(runeId))
+            KnownRunesCraftRecipes.Add(runeId, false);
     }
 
     public static void SetRuneRecipeFull(string id)
     {
         if (id.Contains("failed")) return;
-        var recipeId = id;
-        if (id.Split('_').Length > 3) recipeId = id[13..];
-
-        KnownRunesCraftRecipes[recipeId] = (3, true,
-            _content.Load<Texture2D>($"textures/rune_crafting_table/recipes/recipe_{recipeId}_half"),
-            _content.Load<Texture2D>($"textures/rune_crafting_table/recipes/recipe_{recipeId}_full")
-            );
+        KnownRunesCraftRecipes[id] = true;
     }
 
-    public static bool TryToGetScrollByRunes(out Item? scroll, params Item[] runes)
+    public static bool TryToGetScrollByRunes(out Item? scroll, out ScrollsRecipes.ScrollInfo scrollInfo, params Item[] runes)
     {
-        foreach (var scrollRecipe in ScrollCraftRecipes)
+        return TryToGetScrollByRunes(out scroll, out scrollInfo, runes.Select(r => r.ID).ToArray());
+    }
+    
+    public static bool TryToGetScrollByRunes(out Item? scroll, out ScrollsRecipes.ScrollInfo scrollInfo, params string[] ids)
+    {
+        if (ids.Length != 2)
         {
-            if (scrollRecipe.Key.Length != runes.Length)
-                continue;
-            if ((scrollRecipe.Key[0] == runes[0].ID && scrollRecipe.Key[1] == runes[1].ID) || 
-                (scrollRecipe.Key[1] == runes[0].ID && scrollRecipe.Key[0] == runes[1].ID))
+            scroll = null;
+            scrollInfo = null;
+            return false;
+        }
+        
+        var rune1 = ids[0].Split('_');
+        var rune2 = ids[1].Split('_');
+        if (rune1[3] != rune2[3] ||
+            ((rune1[2] != rune2[2] || rune1[4] == rune2[4]) &&
+             (rune1[2] == rune2[2] || rune1[4] != rune2[4])))
+        {
+            scroll = null;
+            scrollInfo = null;
+            return false;
+        }
+
+        var runesIds = ids.Select(item => item.Split('_')[2] + "_" + item.Split('_')[4]).ToArray();
+
+        foreach (var scrollRecipe in ScrollsRecipes.Recipes)
+        {
+            if ((scrollRecipe.Key.runeElementAndVariant1 == runesIds[0] && scrollRecipe.Key.runeElementAndVariant2 == runesIds[1]) || 
+                (scrollRecipe.Key.runeElementAndVariant2 == runesIds[0] && scrollRecipe.Key.runeElementAndVariant1 == runesIds[1]))
             {
-                var newScroll = Scrolls[scrollRecipe.Value];
-                scroll = new Item(newScroll);
-                if (!ScrollsRecipesTextures[scrollRecipe.Value].isVisible)
-                    ScrollsRecipesTextures[scrollRecipe.Value] = (true, ScrollsRecipesTextures[scrollRecipe.Value].Texture);
+                var newScroll = new Item(
+                    ItemType.Scroll, 
+                    ItemsDataHolder.Scrolls.ScrollsTypesInfo[scrollRecipe.Value.Type].texture2D, 
+                    scrollRecipe.Value.id + "_" + scrollRecipe.Value.Type.ToString().ToLower() + "_" +  rune1[3], 
+                    $"Свиток {scrollRecipe.Value.rus}\n" +
+                    $"Тип: {ItemsDataHolder.Scrolls.ScrollsTypesInfo[scrollRecipe.Value.Type].rus}\n" +
+                    $"Сила: {rune1[3]}");
+                scroll = newScroll;
+                scrollInfo = scrollRecipe.Value;
                 return true;
             }
         }
         scroll = null;
+        scrollInfo = null;
         return false;
     }
 
@@ -129,5 +149,13 @@ public static class AllGameItems
         }
         resultRuneId = null;
         return false;
+    }
+
+    public static void TryToUnlockScrollRecipe(ScrollsRecipes.ScrollInfo scrollInfo)
+    {
+        if (!KnownScrollsCraftRecipes.Contains(scrollInfo))
+        {
+            KnownScrollsCraftRecipes.Add(scrollInfo);
+        }
     }
 }

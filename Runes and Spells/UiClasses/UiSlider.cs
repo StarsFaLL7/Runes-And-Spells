@@ -70,5 +70,10 @@ public class UiSlider
         spriteBatch.Draw(HolderTexture, GetHolderPosition(), Color.White);
     }
 
-    public void SetValue(float value) => Value = MathHelper.Clamp(value, _minValue, _maxValue);
+    public void SetValue(float value)
+    {
+        Value = MathHelper.Clamp(value, _minValue, _maxValue);
+        _holderPosition = new Vector2(_zeroPositionX + Value / (_maxValue - _minValue) * (_maxPositionX - _zeroPositionX), Position.Y);
+        HolderRectangle = new Rectangle((int)_holderPosition.X, (int)_holderPosition.Y, HolderTexture.Width, HolderTexture.Height);
+    }
 }
