@@ -38,9 +38,10 @@ public class UiAnimatedTexture
     {
         if (!_animTimer.IsRunning)
             _animTimer.StartAgain();
+        
         spriteBatch.Draw(_spritesheet, position, 
-            new Rectangle(_currentFrame * (int)_frameSize.X, 0, (int)_frameSize.X, (int)_frameSize.Y),
-            Color.White);
+            new Rectangle(_currentFrame * (int)_frameSize.X, 0, (int)_frameSize.X, (int)_frameSize.Y), 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         _animTimer.Tick();
     }
 

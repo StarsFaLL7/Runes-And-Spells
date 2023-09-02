@@ -1,0 +1,522 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="Language" xml:space="preserve">
+        <value>Язык</value>
+    </data>
+    <data name="Options" xml:space="preserve">
+        <value>Настройки</value>
+    </data>
+    <data name="New game" xml:space="preserve">
+        <value>Новая игра</value>
+    </data>
+    <data name="Continue" xml:space="preserve">
+        <value>Продолжить</value>
+    </data>
+    <data name="Exit" xml:space="preserve">
+        <value>Выход</value>
+    </data>
+    <data name="Let's go!" xml:space="preserve">
+        <value>Поехали!</value>
+    </data>
+    <data name="Music" xml:space="preserve">
+        <value>Музыка</value>
+    </data>
+    <data name="Effects" xml:space="preserve">
+        <value>Эффекты</value>
+    </data>
+    <data name="Video" xml:space="preserve">
+        <value>Видео</value>
+    </data>
+    <data name="Volume" xml:space="preserve">
+        <value>Громкость</value>
+    </data>
+    <data name="Fullscreen" xml:space="preserve">
+        <value>Полный экран</value>
+    </data>
+    <data name="Resolution" xml:space="preserve">
+        <value>Разрешение</value>
+    </data>
+    <data name="Day" xml:space="preserve">
+        <value>День</value>
+    </data>
+    <data name="Wallet" xml:space="preserve">
+        <value>Кошель</value>
+    </data>
+    <data name="Runes unlocked" xml:space="preserve">
+        <value>Открыто рун</value>
+    </data>
+    <data name="Scrolls unlocked" xml:space="preserve">
+        <value>Открыто свитков</value>
+    </data>
+    <data name="Ready to start" xml:space="preserve">
+        <value>Готовы начать</value>
+    </data>
+    <data name="adventure?" xml:space="preserve">
+        <value>исследование?</value>
+    </data>
+    <data name="a new" xml:space="preserve">
+        <value>новое</value>
+    </data>
+    <data name="Load" xml:space="preserve">
+        <value>Загрузить</value>
+    </data>
+    <data name="Backstory1" xml:space="preserve">
+        <value>В далеком краю странствовал один путешественник, \nпреследующий свою главную цель в жизни. Он долго скитался\nиз одного края мира в другой, изучая обряды и традиции,\nчтобы постичь столь хаотичную силу - магию.</value>
+    </data>
+    <data name="Backstory2" xml:space="preserve">
+        <value>В один из дней своего путешествия он забрел очень далеко \nв лес и заблудился. Усталость накатывала все сильнее,\nи уже начинало темнеть. Остаться спать в открытом\nместе означало бы гибель, ведь звери в этом лесу\nпросыпаются именно ночью.</value>
+    </data>
+    <data name="Backstory3" xml:space="preserve">
+        <value>Путешественнику пришлось идти всю ночь в поисках укрытия.\nВокруг то и дело были слышны ужасные вои и пугающие звуки.</value>
+    </data>
+    <data name="Backstory4" xml:space="preserve">
+        <value>И вот, начало светать. Путник из последних сил забрался \nна высокий склон и, пристально оглядев округу, \nзаметил небольшую избушку.</value>
+    </data>
+    <data name="Backstory5" xml:space="preserve">
+        <value>Это был заброшенный дом, в котором уже давно никого не \nбыло. Обследуя свое новое укрытие он был очень \nудивлен - в доме находились вещи, про которые он как-то раз\nчитал в старых книгах: алтарь и магическая печь.</value>
+    </data>
+    <data name="Backstory6" xml:space="preserve">
+        <value>Путник решил остаться в этом доме на несколько дней, \nчтобы передохнуть. На улице рядом с входной дверью \nнаходилась большая лужа грязи, которую было решено убрать.</value>
+    </data>
+    <data name="Backstory7" xml:space="preserve">
+        <value>На следующий день после уничтожения грязи,\nстранник впал в ступор - лужа снова была полная,\nкак будто он ее и не убирал.</value>
+    </data>
+    <data name="Backstory8" xml:space="preserve">
+        <value>Внимательно изучив эту необъяснимую на первый взгляд \nлужу грязи, путешественник пришел к выводу:\nэто вовсе не грязь, а магическая глина, \nспособная на регенерацию.</value>
+    </data>
+    <data name="Backstory9" xml:space="preserve">
+        <value>Тогда к нему и пришло осознание: прошлый владелец дома \nзанимался созданием рун - древним способом хранить \nмагию в глине путем зачарования.</value>
+    </data>
+    <data name="Backstory10" xml:space="preserve">
+        <value>Не упуская такой возможности, путник решает продолжить дело\nпрошлого хозяина и изучить этот удивительный мир магии.\nНо первым делом ему надо сделать свою первую\nв жизни руну, а потом и свой первый свиток магии.</value>
+    </data>
+    <data name="Save" xml:space="preserve">
+        <value>Сохранить</value>
+    </data>
+    <data name="Yes" xml:space="preserve">
+        <value>Да</value>
+    </data>
+    <data name="No" xml:space="preserve">
+        <value>Нет</value>
+    </data>
+    <data name="Are you sure you want to exit?" xml:space="preserve">
+        <value>Вы уверены,\nчто хотите выйти?</value>
+    </data>
+    <data name="Back" xml:space="preserve">
+        <value>Назад</value>
+    </data>
+    <data name="Empty slot" xml:space="preserve">
+        <value>Пустой слот</value>
+    </data>
+    <data name="Choose the slot" xml:space="preserve">
+        <value>Выберите слот</value>
+    </data>
+    <data name="Power" xml:space="preserve">
+        <value>Сила</value>
+    </data>
+    <data name="Type" xml:space="preserve">
+        <value>Вид</value>
+    </data>
+    <data name="Start" xml:space="preserve">
+        <value>Начать</value>
+    </data>
+    <data name="Craft" xml:space="preserve">
+        <value>Создать</value>
+    </data>
+    <data name="Unknown scroll" xml:space="preserve">
+        <value>Неизвестный свиток</value>
+    </data>
+    <data name="Водного потока" xml:space="preserve">
+        <value>Водного потока</value>
+    </data>
+    <data name="Лечения" xml:space="preserve">
+        <value>Лечения</value>
+    </data>
+    <data name="Кипячения" xml:space="preserve">
+        <value>Кипячения</value>
+    </data>
+    <data name="Хождения по воде" xml:space="preserve">
+        <value>Хождения по воде</value>
+    </data>
+    <data name="Морозной воды" xml:space="preserve">
+        <value>Морозной воды</value>
+    </data>
+    <data name="Удачной рыбалки" xml:space="preserve">
+        <value>Удачной рыбалки</value>
+    </data>
+    <data name="Омоложения" xml:space="preserve">
+        <value>Омоложения</value>
+    </data>
+    <data name="Кислоты" xml:space="preserve">
+        <value>Кислоты</value>
+    </data>
+    <data name="Защиты от кислоты" xml:space="preserve">
+        <value>Защиты от кислоты</value>
+    </data>
+    <data name="Регенерации" xml:space="preserve">
+        <value>Регенерации</value>
+    </data>
+    <data name="Тумана" xml:space="preserve">
+        <value>Тумана</value>
+    </data>
+    <data name="Прилива" xml:space="preserve">
+        <value>Прилива</value>
+    </data>
+    <data name="Снега" xml:space="preserve">
+        <value>Снега</value>
+    </data>
+    <data name="Вдохновения" xml:space="preserve">
+        <value>Вдохновения</value>
+    </data>
+    <data name="Склейки" xml:space="preserve">
+        <value>Склейки</value>
+    </data>
+    <data name="Опьянения" xml:space="preserve">
+        <value>Опьянения</value>
+    </data>
+    <data name="Лени" xml:space="preserve">
+        <value>Лени</value>
+    </data>
+    <data name="Лавы" xml:space="preserve">
+        <value>Крист. Лавы</value>
+    </data>
+    <data name="Ловкости" xml:space="preserve">
+        <value>Ловкости</value>
+    </data>
+    <data name="Скольжения" xml:space="preserve">
+        <value>Скольжения</value>
+    </data>
+    <data name="Землекопа" xml:space="preserve">
+        <value>Землекопа</value>
+    </data>
+    <data name="Шипов" xml:space="preserve">
+        <value>Шипов</value>
+    </data>
+    <data name="Каменной кожи" xml:space="preserve">
+        <value>Каменной кожи</value>
+    </data>
+    <data name="Буйного роста" xml:space="preserve">
+        <value>Буйного роста</value>
+    </data>
+    <data name="Стальной кожи" xml:space="preserve">
+        <value>Стальной кожи</value>
+    </data>
+    <data name="Быстрой ковки" xml:space="preserve">
+        <value>Быстрой ковки</value>
+    </data>
+    <data name="Земного дыхания" xml:space="preserve">
+        <value>Дыхния землей</value>
+    </data>
+    <data name="Замедления" xml:space="preserve">
+        <value>Замедления</value>
+    </data>
+    <data name="Удачных событий" xml:space="preserve">
+        <value>Удачных событий</value>
+    </data>
+    <data name="Силы" xml:space="preserve">
+        <value>Силы</value>
+    </data>
+    <data name="Неплодородия" xml:space="preserve">
+        <value>Неплодородия</value>
+    </data>
+    <data name="Окаменения" xml:space="preserve">
+        <value>Окаменения</value>
+    </data>
+    <data name="Испепеления" xml:space="preserve">
+        <value>Испепеления</value>
+    </data>
+    <data name="Огненного смерча" xml:space="preserve">
+        <value>Огненного смерча</value>
+    </data>
+    <data name="Ледяной ауры" xml:space="preserve">
+        <value>Ледяной ауры</value>
+    </data>
+    <data name="Теплого пламени" xml:space="preserve">
+        <value>Теплого пламени</value>
+    </data>
+    <data name="Призыва огня" xml:space="preserve">
+        <value>Призыва огня</value>
+    </data>
+    <data name="Злобного огня" xml:space="preserve">
+        <value>Злобного огня</value>
+    </data>
+    <data name="Защиты от огня" xml:space="preserve">
+        <value>Защиты от огня</value>
+    </data>
+    <data name="Света" xml:space="preserve">
+        <value>Света</value>
+    </data>
+    <data name="Оттепели" xml:space="preserve">
+        <value>Оттепели</value>
+    </data>
+    <data name="Магической силы" xml:space="preserve">
+        <value>Магической силы</value>
+    </data>
+    <data name="Решительности" xml:space="preserve">
+        <value>Решительности</value>
+    </data>
+    <data name="Адского пламени" xml:space="preserve">
+        <value>Адского пламени</value>
+    </data>
+    <data name="Взрыва" xml:space="preserve">
+        <value>Взрыва</value>
+    </data>
+    <data name="Левитации" xml:space="preserve">
+        <value>Левитации</value>
+    </data>
+    <data name="Ледяного дыхания" xml:space="preserve">
+        <value>Ледяного дыхания</value>
+    </data>
+    <data name="Невидимости" xml:space="preserve">
+        <value>Невидимости</value>
+    </data>
+    <data name="Легкомыслия" xml:space="preserve">
+        <value>Легкомыслия</value>
+    </data>
+    <data name="Молнии" xml:space="preserve">
+        <value>Молнии</value>
+    </data>
+    <data name="Защиты от бури" xml:space="preserve">
+        <value>Защиты от бури</value>
+    </data>
+    <data name="Сосульки" xml:space="preserve">
+        <value>Сосульки</value>
+    </data>
+    <data name="Перышка" xml:space="preserve">
+        <value>Перышка</value>
+    </data>
+    <data name="Либидо" xml:space="preserve">
+        <value>Либидо</value>
+    </data>
+    <data name="Зловония" xml:space="preserve">
+        <value>Зловония</value>
+    </data>
+    <data name="Слепоты" xml:space="preserve">
+        <value>Слепоты</value>
+    </data>
+    <data name="Снежного бурана" xml:space="preserve">
+        <value>Снежного бурана</value>
+    </data>
+    <data name="Магического льда" xml:space="preserve">
+        <value>Магического льда</value>
+    </data>
+    <data name="Хладнокровия" xml:space="preserve">
+        <value>Хладнокровия</value>
+    </data>
+    <data name="Ядовитого льда" xml:space="preserve">
+        <value>Ядовитого льда</value>
+    </data>
+    <data name="Защиты от мороза" xml:space="preserve">
+        <value>Защиты от мороза</value>
+    </data>
+    <data name="Ледяной феи" xml:space="preserve">
+        <value>Ледяной феи</value>
+    </data>
+    <data name="Обездвиживания" xml:space="preserve">
+        <value>Обездвиживания</value>
+    </data>
+    <data name="Ледяного хаоса" xml:space="preserve">
+        <value>Ледяного хаоса</value>
+    </data>
+    <data name="Осколка злобы" xml:space="preserve">
+        <value>Осколка злобы</value>
+    </data>
+    <data name="Сна" xml:space="preserve">
+        <value>Сна</value>
+    </data>
+    <data name="Галлюцинаций" xml:space="preserve">
+        <value>Галлюцинаций</value>
+    </data>
+    <data name="Хождения во сне" xml:space="preserve">
+        <value>Хождения во сне</value>
+    </data>
+    <data name="Защиты от магии" xml:space="preserve">
+        <value>Защиты от магии</value>
+    </data>
+    <data name="Очарования" xml:space="preserve">
+        <value>Очарования</value>
+    </data>
+    <data name="Кошмаров" xml:space="preserve">
+        <value>Кошмаров</value>
+    </data>
+    <data name="Страха" xml:space="preserve">
+        <value>Страха</value>
+    </data>
+    <data name="Управл. кровью" xml:space="preserve">
+        <value>Управл. кровью</value>
+    </data>
+    <data name="Старения" xml:space="preserve">
+        <value>Старения</value>
+    </data>
+    <data name="Гниения" xml:space="preserve">
+        <value>Гниения</value>
+    </data>
+    <data name="Отравления" xml:space="preserve">
+        <value>Отравления</value>
+    </data>
+    <data name="Некромантии" xml:space="preserve">
+        <value>Некромантии</value>
+    </data>
+    <data name="Разрыва материи" xml:space="preserve">
+        <value>Разрыва материи</value>
+    </data>
+    <data name="Снятия порчи" xml:space="preserve">
+        <value>Снятия порчи</value>
+    </data>
+    <data name="Ярости" xml:space="preserve">
+        <value>Ярости</value>
+    </data>
+    <data name="Проклятия" xml:space="preserve">
+        <value>Проклятия</value>
+    </data>
+    <data name="Scroll of" xml:space="preserve">
+        <value>Свиток</value>
+    </data>
+    <data name="Магия природы" xml:space="preserve">
+        <value>Магия природы</value>
+    </data>
+    <data name="Магия ветра" xml:space="preserve">
+        <value>Магия ветра</value>
+    </data>
+    <data name="Магия океана" xml:space="preserve">
+        <value>Магия океана</value>
+    </data>
+    <data name="Магия солнца" xml:space="preserve">
+        <value>Магия солнца</value>
+    </data>
+    <data name="Магия фей" xml:space="preserve">
+        <value>Магия фей</value>
+    </data>
+    <data name="Магия жизни" xml:space="preserve">
+        <value>Магия жизни</value>
+    </data>
+    <data name="Магия льда" xml:space="preserve">
+        <value>Магия льда</value>
+    </data>
+    <data name="Магия яда" xml:space="preserve">
+        <value>Магия яда</value>
+    </data>
+    <data name="Темная магия" xml:space="preserve">
+        <value>Темная магия</value>
+    </data>
+    <data name="Cancel" xml:space="preserve">
+        <value>Отмена</value>
+    </data>
+    <data name="Finish" xml:space="preserve">
+        <value>Готово</value>
+    </data>
+    <data name="Your position" xml:space="preserve">
+        <value>Ваша позиция</value>
+    </data>
+    <data name="Runes" xml:space="preserve">
+        <value>Руны</value>
+    </data>
+    <data name="Other" xml:space="preserve">
+        <value>Другое</value>
+    </data>
+    <data name="Scrolls" xml:space="preserve">
+        <value>Свитки</value>
+    </data>
+    <data name="Page" xml:space="preserve">
+        <value>Стр.</value>
+    </data>
+    <data name="Цена продажи" xml:space="preserve">
+        <value>Цена продажи</value>
+    </data>
+    <data name="Кусочки глины" xml:space="preserve">
+        <value>Кусочки глины</value>
+    </data>
+    <data name="Глина" xml:space="preserve">
+        <value>Глина</value>
+    </data>
+    <data name="Старый серебряный ключ" xml:space="preserve">
+        <value>Старый серебряный ключ</value>
+    </data>
+    <data name="Старый золотой ключ" xml:space="preserve">
+        <value>Старый золотой ключ</value>
+    </data>
+    <data name="Древний изумрудный ключ" xml:space="preserve">
+        <value>Древний изумрудный ключ</value>
+    </data>
+    <data name="Волшебный пергамент" xml:space="preserve">
+        <value>Волшебный пергамент</value>
+    </data>
+    <data name="Эссенция руны" xml:space="preserve">
+        <value>Эссенция руны</value>
+    </data>
+    <data name="Unknown rune cast" xml:space="preserve">
+        <value>Слепок неизвестной руны</value>
+    </data>
+    <data name="Element" xml:space="preserve">
+        <value>Стихия</value>
+    </data>
+    <data name="water" xml:space="preserve">
+        <value>Вода</value>
+    </data>
+    <data name="grass" xml:space="preserve">
+        <value>Земля</value>
+    </data>
+    <data name="fire" xml:space="preserve">
+        <value>Огонь</value>
+    </data>
+    <data name="air" xml:space="preserve">
+        <value>Воздух</value>
+    </data>
+    <data name="ice" xml:space="preserve">
+        <value>Лед</value>
+    </data>
+    <data name="moon" xml:space="preserve">
+        <value>Луна</value>
+    </data>
+    <data name="blood" xml:space="preserve">
+        <value>Кровь</value>
+    </data>
+    <data name="distorted" xml:space="preserve">
+        <value>Искажение</value>
+    </data>
+    <data name="black" xml:space="preserve">
+        <value>Тьма</value>
+    </data>
+    <data name="Rune cast" xml:space="preserve">
+        <value>Слепок руны</value>
+    </data>
+    <data name="Rune" xml:space="preserve">
+        <value>Руна</value>
+    </data>
+    <data name="Объединение рун" xml:space="preserve">
+        <value>Объединение рун</value>
+    </data>
+    <data name="Извлечение эссенции" xml:space="preserve">
+        <value>Извлечение\nэссенции</value>
+    </data>
+    <data name="Усиление руны" xml:space="preserve">
+        <value>Усиление руны</value>
+    </data>
+    <data name="Sell Tab" xml:space="preserve">
+        <value>Продажа</value>
+    </data>
+    <data name="Buy Tab" xml:space="preserve">
+        <value>Покупка</value>
+    </data>
+    <data name="Give" xml:space="preserve">
+        <value>Отдать</value>
+    </data>
+</root>

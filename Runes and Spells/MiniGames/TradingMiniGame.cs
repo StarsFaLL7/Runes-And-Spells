@@ -5,6 +5,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Runes_and_Spells.Screens;
+using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.classes;
 
@@ -17,7 +19,9 @@ public class TradingMiniGame
         BottomLeft,
         BottomRight
     }
-    
+
+    private Game1 _game;
+    private MarketScreen _marketScreen;
     private Texture2D _mainCircleTexture;
     private Vector2 _circlePosition;
     private Dictionary<Area, Rectangle> _areas;
@@ -26,14 +30,27 @@ public class TradingMiniGame
     private Vector2 _moveDirection;
     private Vector2 _nextPosition;
     public double Score { get; private set; }
-    private const int SpeedModifier = 4;
+    private float _speedModifier = 4;
     private int _startPrice;
+    public int MinTrade { get; private set; }
+    public int MaxTrade { get; private set; }
+
+    public TradingMiniGame(MarketScreen marketScreen, Game1 game)
+    {
+        _marketScreen = marketScreen;
+        _game = game;
+    }
     
     public void LoadContent(ContentManager content)
     {
         _mainCircleTexture = content.Load<Texture2D>("textures/market_screen/mini_game_circle");
-        
-        _allRectangle = new Rectangle(85, 550, 1240, 396);
+        GenerateAreas();
+    }
+
+    public void GenerateAreas()
+    {
+        _allRectangle = new Rectangle((int)(85*Game1.ResolutionScale.X), (int)(550*Game1.ResolutionScale.Y), 
+            (int)(1240*Game1.ResolutionScale.X), (int)(396*Game1.ResolutionScale.Y));
         _areas = new Dictionary<Area, Rectangle>
         {
             {
@@ -61,15 +78,22 @@ public class TradingMiniGame
     public void Update()
     {
         if (!IsRunning) return;
-        
-        if (Math.Abs(_circlePosition.X - _nextPosition.X) < SpeedModifier && Math.Abs(_circlePosition.Y - _nextPosition.Y) < SpeedModifier)
+
+        if (_game.Energy <= 0.01f)
+        {
+            _marketScreen.SellItem(_startPrice + (int)(Score / 100));
+            Stop();
+        }
+        _game.SubtractEnergy(0.01f);
+        _speedModifier = 4 * Game1.ResolutionScale.X;
+        if (Math.Abs(_circlePosition.X - _nextPosition.X) < _speedModifier*2 && Math.Abs(_circlePosition.Y - _nextPosition.Y) < _speedModifier*2)
         {
             _circlePosition = _nextPosition;
             _nextPosition = GenerateNextPosition(_circlePosition);
             _moveDirection = GetMovementDirection(_circlePosition, _nextPosition);
         }
         
-        _circlePosition += _moveDirection * SpeedModifier;
+        _circlePosition += _moveDirection * _speedModifier;
         
         var mouseState = Mouse.GetState();
         if (
@@ -79,10 +103,19 @@ public class TradingMiniGame
             Score += 6;
         else
             Score -= 5;
+        
+        var kb = Keyboard.GetState();
+        if (Score >= MaxTrade || Score <= MinTrade || kb.IsKeyDown(Keys.Space) || kb.IsKeyDown(Keys.Enter))
+        {
+            _marketScreen.SellItem(_startPrice + (int)(Score / 100));
+            Stop();
+        }
     }
 
-    public void Start(int startPrice)
+    public void Start(int startPrice, int minProfit, int maxProfit)
     {
+        MinTrade = minProfit*100;
+        MaxTrade = maxProfit*100;
         Reset();
         _startPrice = startPrice;
         IsRunning = true;
@@ -98,10 +131,10 @@ public class TradingMiniGame
         Score = 0;
     }
 
-    public int Stop()
+    public void Stop()
     {
         IsRunning = false;
-        return _startPrice + (int)Score / 100;
+        Reset();
     }
 
     private Vector2 GetMovementDirection(Vector2 arrivePos, Vector2 destinationPos)
@@ -133,8 +166,11 @@ public class TradingMiniGame
             >= 2000 => Color.Gold,
             _ => Color.OrangeRed
         };
-        spriteBatch.DrawString(font, "Успешность торговли:", new Vector2(499, 482), new Color(226, 226, 226));
-        spriteBatch.DrawString(font, ((int)Score/100).ToString(), new Vector2(715, 520), scoreColor);
-        spriteBatch.Draw(_mainCircleTexture, _circlePosition, Color.White);
+        spriteBatch.DrawString(font, "Успешность торговли:", new Vector2(499, 482)*Game1.ResolutionScale, 
+            new Color(226, 226, 226), 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        spriteBatch.DrawString(font, ((int)Score/100).ToString(), new Vector2(715, 520)*Game1.ResolutionScale, 
+            scoreColor, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        spriteBatch.Draw(_mainCircleTexture, _circlePosition, null, 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
     }
 }

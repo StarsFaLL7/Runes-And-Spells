@@ -53,7 +53,7 @@ public class Controller
                 !_gameCore.Map.IsThereSolidObject(_gameCore.PlayerPosition.X - playerSpeed, _gameCore.PlayerPosition.Y) &&
                 (_gameCore.PlayerPosition.X >= 6000 || _gameCore.PlayerHasCompass))
             {
-                if (_gameCore.Game.Introduction.IsPlaying && _gameCore.PlayerPosition.X > GameMap.MapWidth*GameMap.TileSize - Game1.ScreenWidth + 32 || 
+                if (_gameCore.Game.Introduction.IsPlaying && _gameCore.PlayerPosition.X > GameMap.MapWidth*GameMap.TileSize - _gameCore.Game.ScreenWidth + 32 || 
                     !_gameCore.Game.Introduction.IsPlaying)
                 {
                     _gameCore.PlayerPosition =
@@ -70,7 +70,7 @@ public class Controller
                     (int)(_gameCore.PlayerPosition.Y + playerSpeed) / GameMap.TileSize].IsPassable || _gameCore.PlayerIsOnWings) &&
                 !_gameCore.Map.IsThereSolidObject(_gameCore.PlayerPosition.X, _gameCore.PlayerPosition.Y + playerSpeed))
             {
-                if (_gameCore.Game.Introduction.IsPlaying && _gameCore.PlayerPosition.Y < Game1.ScreenHeight || 
+                if (_gameCore.Game.Introduction.IsPlaying && _gameCore.PlayerPosition.Y < _gameCore.Game.ScreenHeight || 
                     !_gameCore.Game.Introduction.IsPlaying)
                 {
                     _gameCore.PlayerPosition =
@@ -94,7 +94,14 @@ public class Controller
         
         var wasPlayerMoving = _gameCore.IsPlayerMoving;
         _gameCore.IsPlayerMoving = lastPlayerPos != _gameCore.PlayerPosition;
-        
+        if (_gameCore.IsPlayerMoving && !_gameCore.TimerStepSound.IsRunning)
+        {
+            _gameCore.TimerStepSound.StartWithTime(1200/playerSpeed);
+        }
+        else if (!_gameCore.IsPlayerMoving)
+        {
+            _gameCore.TimerStepSound.Stop();
+        }
         if (lastPlayerPos.Y < _gameCore.PlayerPosition.Y)
             _gameCore.PlayerLastLookDirection = Direction.Down;
         else if (lastPlayerPos.Y > _gameCore.PlayerPosition.Y)
@@ -112,8 +119,8 @@ public class Controller
         if (!_gameCore.Game.Introduction.IsPlaying)
         {
             _gameCore.CameraPosition = new Vector2(
-                Math.Min(Math.Max(_gameCore.PlayerPosition.X - Game1.ScreenWidth / 2, 0), GameMap.MapWidth * GameMap.TileSize - Game1.ScreenWidth),
-                Math.Min(Math.Max(_gameCore.PlayerPosition.Y - Game1.ScreenHeight / 2, 0), GameMap.MapHeight * GameMap.TileSize - Game1.ScreenHeight)
+                Math.Min(Math.Max(_gameCore.PlayerPosition.X - _gameCore.Game.ScreenWidth / 2, 0), GameMap.MapWidth * GameMap.TileSize - _gameCore.Game.ScreenWidth),
+                Math.Min(Math.Max(_gameCore.PlayerPosition.Y - _gameCore.Game.ScreenHeight / 2, 0), GameMap.MapHeight * GameMap.TileSize - _gameCore.Game.ScreenHeight)
             );
         }
         

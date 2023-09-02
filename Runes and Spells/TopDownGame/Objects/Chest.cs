@@ -61,8 +61,10 @@ public class Chest : MapObject
         });
     }
 
-    public Chest(Vector2 positionInPixelsLeftBottom, AllMapDynamicObjects.DynamicObjectInfo FromObjectInfo,TopDownCore core, ChestType type)
-        : base(positionInPixelsLeftBottom, FromObjectInfo.Spritesheet, FromObjectInfo.SpriteSheetRectangle, FromObjectInfo.CollisionRectangle, 
+    public void SetOpenedFrame() => _animationFrame = SpriteSheet.Width / GameMap.TileSize - 1;
+
+    public Chest(Vector2 positionInPixelsLeftBottom, AllMapDynamicObjects.DynamicObjectInfo fromObjectInfo,TopDownCore core, ChestType type)
+        : base(positionInPixelsLeftBottom, fromObjectInfo.Spritesheet, fromObjectInfo.SpriteSheetRectangle, fromObjectInfo.CollisionRectangle, 
             $"chest_{type.ToString().ToLower()}", core)
     {
         _gameCore = core;
@@ -122,86 +124,106 @@ public class Chest : MapObject
     
     private void Clicked()
     {
-        var key = _gameCore.Game.Inventory.Items.FirstOrDefault(i => i.ID == $"key_{Type.ToString().ToLower()}");
+        var key = _gameCore.Game.Inventory.Items.FirstOrDefault(i => i.ID == $"key_{Type.ToString().ToLower()}" && i.Count > 0);
         if (key is not null)
         {
             IsOpened = true;
-            var allRunesToGiveTier3 = ItemsDataHolder.Runes.FinishedRunes
-                .Select(r => r.Value)
-                .Where(r => r.ID.Split('_')[3] == "3")
-                .ToArray();
-            var allRunesToGiveTier12 = ItemsDataHolder.Runes.FinishedRunes
-                .Select(r => r.Value)
-                .Where(r => r.ID.Split('_')[3] != "3")
-                .ToArray();
-
-            ItemInfo runeToGiveInfo;
+            key.SubtractCount(1);
+            GameCore.Game.SubtractEnergy(1f);
             switch (Type)
             {
                 case ChestType.Silver:
                     var allUnknownRunesId = ItemsDataHolder.Runes.RunesCreateRecipes.Values
                         .Where(id => !AllGameItems.KnownRunesCraftRecipes.ContainsKey(id))
                         .ToArray();
-                    
+                    var necessaryElements = new Dictionary<NPCType, string>()
+                    {
+                        { NPCType.FisherMan, "water"},
+                        { NPCType.Woodman, "fire"},
+                        { NPCType.Hunter, "ice"},
+                        { NPCType.Bard, "moon"},
+                        { NPCType.Witch, "blood"}
+                    };
+                    foreach (var necEl in necessaryElements)
+                    {
+                        if (!_gameCore.Map.NPCList.First(f => f.NPCType == necEl.Key).IsQuestFinished &&
+                            AllGameItems.KnownRunesCraftRecipes.All(k => !k.Key.Contains(necEl.Value)))
+                        {
+                            allUnknownRunesId = allUnknownRunesId.Where(r => r.Contains(necEl.Value)).ToArray();
+                            necessaryElements.Remove(necEl.Key);
+                        }
+                    }
+
                     if (allUnknownRunesId.Length == 0)
                     {
-                        runeToGiveInfo = allRunesToGiveTier12[Random.Shared.Next(allRunesToGiveTier12.Length)];
-                        _gameCore.Game.Inventory.AddItem(new Item(runeToGiveInfo));
-                        _givenItemTextures.Add(ItemsDataHolder.Runes.RecipeX64RunesTextures[runeToGiveInfo.ID.Replace("finished_", "")]);
-                        break;
+                        GiveRandomRunes(1, 1, 2, 3);
                     }
-                    
-                    var runeRecipeId = allUnknownRunesId[Random.Shared.Next(allUnknownRunesId.Length)];
-                    AllGameItems.UnlockRuneCraftRecipe(runeRecipeId);
-                    _givenItemTextures.Add(ItemsDataHolder.OtherItems.RuneCraftRecipePaperTexture);
-                    
-                    _gameCore.Game.Inventory.AddItem(new Item(ItemsDataHolder.OtherItems.Paper), Random.Shared.Next(1,2));
-                    _givenItemTextures.Add(ItemsDataHolder.OtherItems.PaperTextureX64);
-                    
-                    break;
-                
-                case ChestType.Gold:
-                    
-                    runeToGiveInfo = allRunesToGiveTier3[Random.Shared.Next(allRunesToGiveTier3.Length)];
-                    _gameCore.Game.Inventory.AddItem(new Item(runeToGiveInfo));
-                    _givenItemTextures.Add(ItemsDataHolder.Runes.RecipeX64RunesTextures[runeToGiveInfo.ID.Replace("finished_", "")]);
-
-                    if (AllGameItems.KnownScrollsCraftRecipes.Count == ScrollsRecipes.Recipes.Values.Count)
+                    else
                     {
-                        break;
+                        var runeRecipeId = allUnknownRunesId[Random.Shared.Next(allUnknownRunesId.Length)];
+                        AllGameItems.UnlockRuneCraftRecipe(runeRecipeId);
+                        _givenItemTextures.Add(ItemsDataHolder.OtherItems.RuneCraftRecipePaperTexture);
                     }
-                    var allScrollRecipesToUnlock =
-                        ScrollsRecipes.Recipes.Values
-                            .Where(i => !AllGameItems.KnownScrollsCraftRecipes.Contains(i))
-                            .ToArray();
-                    var scrollInfoToUnlock =
-                            allScrollRecipesToUnlock[Random.Shared.Next(allScrollRecipesToUnlock.Length)];
-                    AllGameItems.TryToUnlockScrollRecipe(scrollInfoToUnlock);
-                    _givenItemTextures.Add(ItemsDataHolder.OtherItems.ScrollCraftRecipePaperTexture);
-                    
+
+                    AllGameItems.ChestOpenDefault.Play();
+                    _gameCore.Game.Inventory.AddItem(new Item(ItemsDataHolder.OtherItems.Paper));
+                    _givenItemTextures.Add(ItemsDataHolder.OtherItems.PaperTextureX64);
+                    break;
+                case ChestType.Gold:
+                    GiveRandomRunes(2, 3);
+                    UnlockRandomScrollRecipes(1);
+                    AllGameItems.ChestOpenDefault.Play();
                     break;
                 case ChestType.Emerald:
-                    for (var i = 0; i < 5; i++)
-                    {
-                        runeToGiveInfo = allRunesToGiveTier12[Random.Shared.Next(allRunesToGiveTier12.Length)];
-                        _gameCore.Game.Inventory.AddItem(new Item(runeToGiveInfo));
-                        _givenItemTextures.Add(ItemsDataHolder.Runes.RecipeX64RunesTextures[runeToGiveInfo.ID.Replace("finished_", "")]);
-                    }
-                    runeToGiveInfo = allRunesToGiveTier3[Random.Shared.Next(allRunesToGiveTier3.Length)];
-                    _gameCore.Game.Inventory.AddItem(new Item(runeToGiveInfo));
-                    _givenItemTextures.Add(ItemsDataHolder.Runes.RecipeX64RunesTextures[runeToGiveInfo.ID.Replace("finished_", "")]);
-                    
-                    _gameCore.Game.Inventory.AddItem(new Item(ItemsDataHolder.OtherItems.Paper), Random.Shared.Next(3, 5));
-                    _givenItemTextures.Add(ItemsDataHolder.OtherItems.PaperTextureX64);
-                    
+                    GiveRandomRunes(2, 1);
+                    GiveRandomRunes(2, 2);
+                    GiveRandomRunes(1, 3);
+                    UnlockRandomScrollRecipes(2);
+                    AllGameItems.ChestOpenMagic.Play();
                     break;
-                
             }
             _animationTimer.Start();
-            key.SubtractCount(1);
         }
     }
 
+    private void GiveRandomRunes(int count, params int[] powerTiers)
+    {
+        var allRunesToGiveTier = ItemsDataHolder.Runes.FinishedRunes
+            .Select(r => r.Value)
+            .Where(r => powerTiers.Contains(int.Parse(r.ID.Split('_')[3])) )
+            .ToArray();
+        
+        for (var i = 0; i < count; i++)
+        {
+            var runeToGiveInfo = allRunesToGiveTier[Random.Shared.Next(allRunesToGiveTier.Length)];
+            _gameCore.Game.Inventory.AddItem(new Item(runeToGiveInfo));
+            _givenItemTextures.Add(ItemsDataHolder.Runes.RecipeX64RunesTextures[runeToGiveInfo.ID.Replace("finished_", "")]);
+        }
+    }
+
+    private void UnlockRandomScrollRecipes(int count)
+    {
+        if (AllGameItems.KnownScrollsCraftRecipes.Count == ScrollsRecipes.Recipes.Values.Count)
+            return;
+        var allScrollRecipesToUnlock =
+            ScrollsRecipes.Recipes.Values
+                .Where(scrollInfo => !AllGameItems.KnownScrollsCraftRecipes.Contains(scrollInfo))
+                .ToArray();
+        var givenItems = new List<ScrollsRecipes.ScrollInfo>();
+        for (var i = 0; i < count; i++)
+        {
+            allScrollRecipesToUnlock = allScrollRecipesToUnlock.Where(inf => !givenItems.Contains(inf)).ToArray();
+            if (allScrollRecipesToUnlock.Length == 0)
+                break;
+            var scrollInfoToUnlock =
+                allScrollRecipesToUnlock[Random.Shared.Next(allScrollRecipesToUnlock.Length)];
+            
+            AllGameItems.TryToUnlockScrollRecipe(scrollInfoToUnlock);
+            _givenItemTextures.Add(ItemsDataHolder.OtherItems.ScrollCraftRecipePaperTexture);
+            givenItems.Add(scrollInfoToUnlock);
+        }
+    }
+    
     private void AnimationFinished()
     {
         _giveItemTimer = new Timer(50, () =>

@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json;
 using Runes_and_Spells.UiClasses;
 using Runes_and_Spells.UtilityClasses;
 
@@ -22,7 +23,7 @@ public class Item
     private bool _startHovered;
     private readonly Timer _hoverTimer;
 
-    public string ToolTipText { get; init; }
+    public string ToolTipText { get; set; }
 
     public Item(ItemType type, Texture2D texture, string id, string toolTipText, int count = 1)
     {
@@ -40,6 +41,20 @@ public class Item
         
     }
 
+    [JsonConstructor]
+    public Item(ItemType type, Texture2D texture, bool isBeingDragged, int count, Vector2 position, bool showToolTip, string toolTipText)
+    {
+        Type = type;
+        Texture = texture;
+        IsBeingDragged = isBeingDragged;
+        Count = count;
+        Position = position;
+        ShowToolTip = showToolTip;
+        ToolTipText = toolTipText;
+        _canBeDragged = true;
+        _hoverTimer = new Timer(AllGameItems.HoverTime, () => { ShowToolTip = true; });
+    }
+
     public void AddCount(int count = 1) => Count += count;
     public void SubtractCount(int count = 1) => Count = Count - count > 0 ? Count - count : 0;
     
@@ -52,7 +67,9 @@ public class Item
 
         if (_canBeDragged)
         {
-            if (new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height).Contains(mouseState.X, mouseState.Y) && 
+            if (new Rectangle((int)(Position.X*Game1.ResolutionScale.X), (int)(Position.Y*Game1.ResolutionScale.Y), 
+                    (int)(Texture.Width*Game1.ResolutionScale.X), (int)(Texture.Height*Game1.ResolutionScale.Y))
+                    .Contains(mouseState.X, mouseState.Y) && 
                 mouseState.LeftButton == ButtonState.Pressed)
             {
                 if (!IsBeingDragged) Count--;
@@ -68,12 +85,16 @@ public class Item
                 IsBeingDragged = false;
             }
         }
-        Position = IsBeingDragged ? new Vector2(mouseState.X - Texture.Width / 2, mouseState.Y - Texture.Height / 2) : defaultPosition;
+        Position = IsBeingDragged ? 
+            new Vector2(mouseState.X - Texture.Width*Game1.ResolutionScale.X / 2, mouseState.Y - Texture.Height*Game1.ResolutionScale.Y / 2) 
+            : defaultPosition;
     }
 
     private void UpdateHover(MouseState mouseState)
     {
-        if (new Rectangle((int)Position.X, (int)Position.Y, Texture.Width, Texture.Height).Contains(mouseState.X, mouseState.Y))
+        if (new Rectangle((int)(Position.X*Game1.ResolutionScale.X), (int)(Position.Y*Game1.ResolutionScale.Y), 
+                (int)(Texture.Width*Game1.ResolutionScale.X), (int)(Texture.Height*Game1.ResolutionScale.Y))
+            .Contains(mouseState.X, mouseState.Y))
         {
             if (!_startHovered)
             {
@@ -99,12 +120,14 @@ public class Item
     public void Draw(SpriteBatch spriteBatch, Vector2 defaultPosition)
     {
         if (Count > 0)
-            spriteBatch.Draw(Texture, defaultPosition, Color.White);
+            spriteBatch.Draw(Texture, defaultPosition, null, 
+                Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
     }
 
     public void DrawAtMousePos(SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(Texture, Position, Color.White);
+        spriteBatch.Draw(Texture, Position, null, 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
     }
 
     public void Lock() => _canBeDragged = false;

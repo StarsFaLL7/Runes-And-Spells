@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -25,7 +26,7 @@ public class ScrollCraftingMiniGame
     private Writer _writer;
     private StringBuilder _enteredText;
     private bool _isAnyKeyPressed;
-    private bool _wasAnyKeyPressed;
+    private KeyboardState _lastKbState;
     private Timer _backSpaceTimer;
     private bool _isBackSpaceReady = true;
     private Texture2D _writingListTexture;
@@ -35,13 +36,14 @@ public class ScrollCraftingMiniGame
     private Timer _firstDrawTimer;
     private Game1 _game;
     
+    
     private Dictionary<string, string> _wordsSpecial = new()
     {
         {"water", "aquam"},
-        {"ice", "glacies"},
+        {"ice", "glace"},
         {"grass", "terra"},
         {"fire", "ignis"},
-        {"blood", "sanguis"},
+        {"blood", "sangus"},
         {"distorted", "corrupto"},
         {"black", "tenebrae"},
         {"air", "aer"},
@@ -53,8 +55,12 @@ public class ScrollCraftingMiniGame
         "potento", "librum", "mensa", 
         "runae", "villae", "habito", "charta", "dryma", "essentia", "epistol", "verba", 
         "sente", "numeri", "facino", "colinu", "imponu", "adune",
-        "igunt", "res", "sub", "sentam", "opsum"
+        "igunt", "res", "sub", "sentam", "opsum", "mensa", "pluma", "atrox",
+        "drake", "timeo"
     };
+    
+    private SoundEffect _soundScrollCompleted;
+    private SoundEffect _soundScrollFailed;
 
     public ScrollCraftingMiniGame(UiSlot outputSlot, UiSlot inputSlot1, UiSlot inputSlot2, Game1 game)
     {
@@ -66,6 +72,8 @@ public class ScrollCraftingMiniGame
 
     public void Initialize(ContentManager content)
     {
+        _soundScrollFailed = content.Load<SoundEffect>("sounds/scroll_failed");
+        _soundScrollCompleted = content.Load<SoundEffect>("sounds/scroll_completed");
         _writingListTexture = content.Load<Texture2D>("textures/scroll_crafting_table/writing_list_back");
         _writingListPosition = new Vector2(276, 784);
         _buttonFinishCraft = new UiButton(
@@ -73,12 +81,14 @@ public class ScrollCraftingMiniGame
             content.Load<Texture2D>("textures/scroll_crafting_table/finish_button_hovered"),
             content.Load<Texture2D>("textures/scroll_crafting_table/finish_button_pressed"),
             new Vector2(1193, 362),
+            "Finish", AllGameItems.Font24Px, new Color(37, 43, 32),
             Stop);
         _buttonCancelCraft = new UiButton(
             content.Load<Texture2D>("textures/scroll_crafting_table/cancel_button_default"),
             content.Load<Texture2D>("textures/scroll_crafting_table/cancel_button_hovered"),
             content.Load<Texture2D>("textures/scroll_crafting_table/cancel_button_pressed"),
             new Vector2(1193, 264),
+            "Cancel", AllGameItems.Font24Px, new Color(68, 28, 28),
             Reset);
         _writer = new Writer(content);
         _enteredText = new StringBuilder();
@@ -97,7 +107,6 @@ public class ScrollCraftingMiniGame
     
     public void Start()
     {
-        if (_game.Introduction.IsPlaying && _game.Introduction.Step == 21) _game.Introduction.Step = 22;
         IsActive = true;
         _inputSlot1.Lock();
         _inputSlot2.Lock();
@@ -119,20 +128,21 @@ public class ScrollCraftingMiniGame
 
     private void InputTextUpdate()
     {
-        var kb = Keyboard.GetState();
-        _wasAnyKeyPressed = _isAnyKeyPressed;
-        _isAnyKeyPressed = kb.GetPressedKeyCount() > 0;
+        var kbState = Keyboard.GetState();
+        _isAnyKeyPressed = kbState.GetPressedKeyCount() > 0;
         _backSpaceTimer.Tick();
-        if (!_wasAnyKeyPressed && _isAnyKeyPressed || kb.IsKeyDown(Keys.Back))
+        var newKeys = kbState.GetPressedKeys()
+            .Where(k => _lastKbState.IsKeyUp(k))
+            .Where(k => k is >= Keys.A and <= Keys.Z or Keys.Back or Keys.Space);
+
+        foreach (var pressedKey in newKeys)
         {
-            var pressedKey = kb.GetPressedKeys()
-                .FirstOrDefault(k => k is >= Keys.A and <= Keys.Z or Keys.Back or Keys.Space);
             if (pressedKey is not default(Keys))
             {
                 switch (pressedKey)
                 {
                     case Keys.Back:
-                        if (_enteredText.Length > 0 && _isBackSpaceReady)
+                        if (_enteredText.Length > 0)
                         {
                             _enteredText.Remove(_enteredText.Length - 1, 1);
                             _isBackSpaceReady = false;
@@ -143,17 +153,20 @@ public class ScrollCraftingMiniGame
                         _enteredText.Append(' ');
                         break;
                     default:
-                        _enteredText.Append(pressedKey.ToString().ToLower()[0]);
+                        if (_enteredText.ToString().Split().All(s => s.Length < 24) && _enteredText.ToString().Length < 40)
+                            _enteredText.Append(pressedKey.ToString().ToLower()[0]);
                         break;
                 }
             }
         }
+        _lastKbState = kbState;
     }
 
     public void Draw(SpriteBatch spriteBatch)
     {
         if (!IsActive) return;
-        spriteBatch.Draw(_writingListTexture, _writingListPosition, Color.White);
+        spriteBatch.Draw(_writingListTexture, _writingListPosition*Game1.ResolutionScale, null, 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         _buttonCancelCraft.Draw(spriteBatch);
         if (CheckEnteredText())
         {
@@ -202,15 +215,20 @@ public class ScrollCraftingMiniGame
 
     private void Stop()
     {
-        if (_game.Introduction.IsPlaying && _game.Introduction.Step == 22) _game.Introduction.Step = 23;
+        if (_game.Introduction.IsPlaying && _game.Introduction.Step == 21) _game.Introduction.Step = 22;
         IsActive = false;
         if (AllGameItems.TryToGetScrollByRunes(out var scroll, out var scrollInfo, _inputSlot1.currentItem, _inputSlot2.currentItem))
         {
             _outputSlot.SetItem(scroll);
             _inputSlot1.Clear();
             _inputSlot2.Clear();
-            
+            _soundScrollCompleted.Play();
             AllGameItems.TryToUnlockScrollRecipe(scrollInfo);
+            _game.SubtractEnergy(3f);
+        }
+        else
+        {
+            _soundScrollFailed.Play();
         }
         Reset();
     }

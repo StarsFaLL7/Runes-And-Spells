@@ -8,48 +8,50 @@ namespace Runes_and_Spells.UtilityClasses;
 
 public static class CountDrawer
 {
-    private static Dictionary<char, Texture2D> _textures;
-    private static int _textureWidth;
-    private static int _textureHeight;
+    public static Dictionary<char, Texture2D> Textures { get; private set; }
+    public static int TextureWidth { get; private set; }
+    public static int TextureHeight { get; private set; }
 
 
     public static void DrawNumber(int number, Vector2 rightBottomPosition, SpriteBatch spriteBatch)
     {
-        if (_textures.Count == 0)
+        if (Textures.Count == 0)
             throw new InvalidOperationException();
         
         var numberStr = number.ToString();
-        var newPosition = new Vector2(rightBottomPosition.X - _textureWidth * numberStr.Length, rightBottomPosition.Y -_textureHeight);
+        var newPosition = new Vector2(rightBottomPosition.X - TextureWidth * numberStr.Length, rightBottomPosition.Y -TextureHeight);
         for (var i = 0; i < numberStr.Length; i++)
         {
-            spriteBatch.Draw(_textures[numberStr[i]], new Vector2(newPosition.X + i*_textureWidth, newPosition.Y), Color.White);
+            spriteBatch.Draw(Textures[numberStr[i]], new Vector2(newPosition.X + i*TextureWidth, newPosition.Y)*Game1.ResolutionScale, 
+                null, Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         }
     }
     public static void DrawNumber(int number, Vector2 rightBottomPosition, SpriteBatch spriteBatch, Color color)
     {
-        if (_textures.Count == 0)
+        if (Textures.Count == 0)
             throw new InvalidOperationException();
         
         var numberStr = number.ToString();
-        var newPosition = new Vector2(rightBottomPosition.X - _textureWidth * numberStr.Length, rightBottomPosition.Y -_textureHeight);
+        var newPosition = new Vector2(rightBottomPosition.X - TextureWidth * numberStr.Length, rightBottomPosition.Y -TextureHeight);
         for (var i = 0; i < numberStr.Length; i++)
         {
-            spriteBatch.Draw(_textures[numberStr[i]], new Vector2(newPosition.X + i*_textureWidth, newPosition.Y), color);
+            spriteBatch.Draw(Textures[numberStr[i]], new Vector2(newPosition.X + i*TextureWidth, newPosition.Y)*Game1.ResolutionScale, 
+                null, color, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         }
     }
 
     public static Rectangle MeasureNumber(int number)
     {
         var numberStr = number.ToString();
-        return new Rectangle(0, 0, numberStr.Length * _textureWidth, _textureHeight);
+        return new Rectangle(0, 0, numberStr.Length * TextureWidth, TextureHeight);
     }
 
     public static void Initialize(ContentManager content)
     {
-        _textures = new Dictionary<char, Texture2D>();
+        Textures = new Dictionary<char, Texture2D>();
         for (var i = 0; i < 10; i++)
-            _textures.Add(i.ToString()[0], content.Load<Texture2D>($"textures/Inventory/wood_numbers/{i}"));
-        _textureWidth = _textures['0'].Width;
-        _textureHeight = _textures['0'].Height;
+            Textures.Add(i.ToString()[0], content.Load<Texture2D>($"textures/Inventory/wood_numbers/{i}"));
+        TextureWidth = Textures['0'].Width;
+        TextureHeight = Textures['0'].Height;
     }
 }

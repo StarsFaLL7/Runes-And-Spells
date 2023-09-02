@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using Runes_and_Spells.classes;
 using Runes_and_Spells.OtherClasses;
 using Runes_and_Spells.UiClasses;
@@ -32,7 +34,8 @@ public class FurnaceMiniGame
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(ActualTexture(), _position, Color.White);
+            spriteBatch.Draw(ActualTexture(), _position*Game1.ResolutionScale, null, 
+                Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         }
     }
 
@@ -58,13 +61,16 @@ public class FurnaceMiniGame
     private bool _isSpacePressed;
     private readonly Timer _clickTimer;
     private readonly GuiButton _spaceButton;
-    
+    private SoundEffect _burningSound;
+    public SoundEffectInstance BurningSoundInstance { get; private set; }
+
     public FurnaceMiniGame(UiProgressBar progressBar, UiSlot inputSlot, Vector2 position, ContentManager content, Game1 game)
     {
         _game = game;
         _progressBar = progressBar;
         _inputSlot = inputSlot;
         _position = position;
+        _burningSound = content.Load<SoundEffect>("music/furnace_sound");
         _pointerTexture = content.Load<Texture2D>("textures/furnace_screen/mini_game/arrow_indicator");
         _successAreas = new List<(int start, int end, int width)>();
         _backTexture = content.Load<Texture2D>("textures/furnace_screen/mini_game/bar_bg");
@@ -87,6 +93,7 @@ public class FurnaceMiniGame
     public void Update()
     {
         if (!IsActive) return;
+        _game.SubtractEnergy(0.01f);
         if (_pointerPosition.X >= _maxPosition - _pointerTexture.Width/2) _isMovingRight = false;
         if (_pointerPosition.X <= _minPosition - _pointerTexture.Width / 2) _isMovingRight = true;
 
@@ -104,11 +111,13 @@ public class FurnaceMiniGame
         _isSpacePressed = Keyboard.GetState()[Keys.Space] == KeyState.Down;
         var spaceClicked = !_wasSpacePressed && _isSpacePressed;
         
-        if (_isMovingRight && !spaceClicked) _pointerPosition.X += _pointerSpeed;
-        else if (!spaceClicked) _pointerPosition.X -= _pointerSpeed;
-        
+        if (_isMovingRight && !spaceClicked) 
+            _pointerPosition.X += _pointerSpeed;
+        else if (!spaceClicked) 
+            _pointerPosition.X -= _pointerSpeed;
         else
         {
+            AllGameItems.ClickSound2.Play();
             if (_game.Introduction.IsPlaying && _game.Introduction.Step == 12) _game.Introduction.Step = 13;
             _spaceButton.IsPressed = true;
             _pointerPosition.Y -= 12;
@@ -136,17 +145,26 @@ public class FurnaceMiniGame
     public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
         if (!IsActive) return;
-        spriteBatch.Draw(_backTexture, _position, Color.White);
+        spriteBatch.Draw(_backTexture, _position*Game1.ResolutionScale, null, 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         foreach (var area in _successAreas)
         {
-            spriteBatch.Draw(_leftAreaEndTexture, new Vector2(area.start, _position.Y), Color.White);
-            spriteBatch.Draw(_fullAreaTexture, new Vector2(area.start, _position.Y), 
-                new Rectangle(0,0, area.width - _rightAreaEndTexture.Width, _fullAreaTexture.Height), Color.White);
-            spriteBatch.Draw(_rightAreaEndTexture, new Vector2(area.end - _rightAreaEndTexture.Width, _position.Y), Color.White);
+            spriteBatch.Draw(_leftAreaEndTexture, new Vector2(area.start, _position.Y)*Game1.ResolutionScale, null, 
+                Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+            
+            spriteBatch.Draw(_fullAreaTexture, new Vector2(area.start, _position.Y)*Game1.ResolutionScale, 
+                new Rectangle(0,0, 
+                    area.width - _rightAreaEndTexture.Width, 
+                    _fullAreaTexture.Height),
+                Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+            
+            spriteBatch.Draw(_rightAreaEndTexture, new Vector2(area.end - _rightAreaEndTexture.Width, _position.Y)*Game1.ResolutionScale, null, 
+                Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         }
 
         _spaceButton.Draw(spriteBatch);
-        spriteBatch.Draw(_pointerTexture, _pointerPosition, Color.White);
+        spriteBatch.Draw(_pointerTexture, _pointerPosition*Game1.ResolutionScale, null, 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
     }
 
     private List<(int start, int end, int width)> GenerateAreas()
@@ -185,10 +203,14 @@ public class FurnaceMiniGame
         _successAreas = GenerateAreas();
         IsActive = true;
         _inputSlot.Lock();
+        BurningSoundInstance = _burningSound.CreateInstance();
+        BurningSoundInstance.Play();
+
     }
 
     private void Stop(bool win)
     {
+        BurningSoundInstance.Stop();
         if (_game.Introduction.IsPlaying && _game.Introduction.Step == 13) _game.Introduction.Step = 14;
         ItemInfo newItem;
         if (!win || _inputSlot.currentItem.ID.Contains("failed"))

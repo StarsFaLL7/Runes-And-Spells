@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Runes_and_Spells.TopDownGame.Core.Records;
 using Runes_and_Spells.TopDownGame.Core.Utility;
+using Runes_and_Spells.TopDownGame.Dialogs;
 using Runes_and_Spells.TopDownGame.Objects;
 using Runes_and_Spells.UtilityClasses;
 
@@ -17,8 +18,15 @@ public class GameView
     private Texture2D _playerOnWingsSpritesheet;
     private Texture2D _mapObjectsTileSheet;
     private Texture2D _compassBGTexture;
+    private Texture2D _compassArrowTexture;
     private TopDownCore _gameCore;
     private SpriteFont _logFont;
+    
+    private Texture2D _dialogBoxTexture;
+    private Dictionary<NPCType, Texture2D> _npcPortraitsTextures;
+    private Texture2D _portraitBorderTexure;
+    public NPC DialogNPCToDraw;
+    
     public Timer PlayerAnimationTimer { get; private set; }
     public int PlayerAnimationFrameIndex;
     public AnimationInfo PlayerAnimationInfo { get; private set; }
@@ -42,15 +50,14 @@ public class GameView
         new Vector2(1, 0),
         new Vector2(1, 1)
     };
-
     
-
     public GameView(TopDownCore core,Texture2D tileSpriteSheet, Texture2D playerAnimationsSpriteSheet, Texture2D mapObjectsTileSheet,SpriteFont logFont)
     {
         _tileSpriteSheet = tileSpriteSheet;
         _playerSpriteSheet = playerAnimationsSpriteSheet;
         _mapObjectsTileSheet = mapObjectsTileSheet;
         _compassBGTexture = core.Game.Content.Load<Texture2D>("top-down/compass_bg");
+        _compassArrowTexture = core.Game.Content.Load<Texture2D>("top-down/compass_arrow");
         _playerOnWingsSpritesheet = core.Game.Content.Load<Texture2D>("top-down/spritesheets/player_wings_animations");
         _gameCore = core;
         _logFont = logFont;
@@ -61,6 +68,19 @@ public class GameView
             PlayerAnimationTimer.StartWithTime(PlayerAnimationInfo.FrameDuration - (_gameCore.IsPlayerRunning ? 50 : 0));
         });
         PlayerAnimationTimer.Start();
+        _dialogBoxTexture = core.Game.Content.Load<Texture2D>("top-down/dialogue/dialog_box");
+        _portraitBorderTexure = core.Game.Content.Load<Texture2D>("top-down/dialogue/border");
+        _npcPortraitsTextures = new Dictionary<NPCType, Texture2D>()
+        {
+            { NPCType.Bard, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_bard")},
+            { NPCType.FisherMan, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_fisherman")},
+            { NPCType.Mage, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_mage")},
+            { NPCType.Hunter, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_hunter")},
+            { NPCType.Woodman, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_lumberjack")},
+            { NPCType.Witch, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_witch")},
+            { NPCType.Thief, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_ninja")},
+            { NPCType.Trader, core.Game.Content.Load<Texture2D>("top-down/dialogue/portrait_trader")}
+        };
     }
 
     public void Draw(GameMap map, Vector2 cameraPosition, SpriteBatch spriteBatch)
@@ -132,11 +152,7 @@ public class GameView
         DrawMapSolidObjects(spriteBatch, true);
         if (_gameCore.PlayerHasCompass)
         {
-            spriteBatch.Draw(_compassBGTexture, Vector2.Zero, Color.White);
-            spriteBatch.DrawString(_gameCore.CompassFont, "Ваша позиция:\n" +
-                                                          $"X: {Math.Round(_gameCore.PlayerPosition.X/64)}\n" +
-                                                          $"Y: {Math.Round(_gameCore.PlayerPosition.Y/64) - 2}", 
-                new Vector2(94, 7), Color.Black);
+            DrawCompassHud(spriteBatch);
         }
 
         if (_gameCore.PlayerPosition.X < 6014 && !_gameCore.PlayerHasCompass)
@@ -144,6 +160,72 @@ public class GameView
             NPC.DrawHint(spriteBatch, "Идти дальше в лес без приборов для навигации опасно,\n" +
                                       "Я могу заблудиться.");
         }
+
+        if (DialogNPCToDraw is not null)
+        {
+            DrawDialogue(spriteBatch, DialogNPCToDraw);
+        }
+    }
+    
+    public void DrawDialogue(SpriteBatch spriteBatch, NPC npc)
+    {
+        var phrase = npc.CurrentPhrase;
+        var npcType = npc.NPCType;
+        spriteBatch.Draw(_dialogBoxTexture, new Vector2(15, 762)*Game1.ResolutionScale, null, Color.White, 
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        spriteBatch.Draw(_npcPortraitsTextures[npcType], new Vector2(48,789)*Game1.ResolutionScale, null, Color.White, 
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        spriteBatch.Draw(_portraitBorderTexure, new Vector2(48,789)*Game1.ResolutionScale, null, Color.White, 
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        var textColor = new Color(29, 14, 2);
+        var font = AllGameItems.Font20Px;
+        spriteBatch.DrawString(font, phrase.Text, new Vector2(315, 789)*Game1.ResolutionScale, textColor, 
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        if (npc.IsQuestActive)
+        {
+            npc.GiveScrollButton.Draw(spriteBatch);
+            npc.SlotForScrolls.Draw(spriteBatch);
+            return;
+        }
+        
+        var i = 0;
+        var y = 774 + font.MeasureString(phrase.Text).Y +
+                     (280 - font.MeasureString(phrase.Text).Y - phrase.AnswerVariants.Select(v => font.MeasureString(v.Text).Y+12).Sum()) / 2;
+        
+        foreach (var variant in phrase.AnswerVariants)
+        {
+            var text = phrase.SelectedAnswerVariant == variant ? $"> {i+1}. {variant.Text}" : $"{i+1}. {variant.Text}";
+            var color = phrase.SelectedAnswerVariant == variant ? textColor : new Color(64, 50, 50);
+            var textSize = font.MeasureString(variant.Text);
+            var x = 315 + (1032f - textSize.X)/2;
+            spriteBatch.DrawString(font, text, new Vector2(x, y)*Game1.ResolutionScale, color, 
+                0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+            y += textSize.Y+12;
+            i++;
+        }
+    }
+
+    private void DrawCompassHud(SpriteBatch spriteBatch)
+    {
+        spriteBatch.Draw(_compassBGTexture, Vector2.Zero, null, 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        var rotation = (float)Math.Atan(
+            (10240 - _gameCore.PlayerPosition.X) /
+            (_gameCore.PlayerPosition.Y - 512));
+        if (_gameCore.PlayerPosition.Y < 512)
+        {
+            rotation -= (float)Math.PI;
+        }
+        spriteBatch.Draw(_compassArrowTexture, new Vector2(47, 47.5f)*Game1.ResolutionScale, null, 
+            Color.White, rotation, 
+            new Vector2((float)(_compassArrowTexture.Width)/2, (float)(_compassArrowTexture.Height)/2), 
+            Game1.ResolutionScale, SpriteEffects.None, 1f);
+
+        spriteBatch.DrawString(_gameCore.CompassFont, $"{Game1.GetText("Your position")}:\n" +
+                                                      $"X: {Math.Round(_gameCore.PlayerPosition.X/64)}\n" +
+                                                      $"Y: {Math.Round(_gameCore.PlayerPosition.Y/64) - 2}", 
+            new Vector2(94, 7)*Game1.ResolutionScale, Color.Black,
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
     }
 
     private void DrawMapPuddles(SpriteBatch spriteBatch)

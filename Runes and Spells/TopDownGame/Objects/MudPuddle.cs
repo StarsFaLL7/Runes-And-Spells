@@ -47,7 +47,7 @@ public class MudPuddle : MapObject
             
             _isPlayingAnimation = true;
             GameCore.Game.Inventory.AddItem(new Item(AllGameItems.Clay), _animClayCount);
-            
+            GameCore.Game.SubtractEnergy(1f);
             _animTimer = new Timer(50, () =>
             {
                 if (_animAlpha > 0)
@@ -85,8 +85,15 @@ public class MudPuddle : MapObject
         if (_isPlayingAnimation)
         {
             var numSize = CountDrawer.MeasureNumber(_animClayCount);
-            CountDrawer.DrawNumber(_animClayCount, new Vector2(_animPos.X + numSize.Width + 5, _animPos.Y - _animDeltaY), 
-                spriteBatch, Color.White*_animAlpha);
+            
+            var numberStr = _animClayCount.ToString();
+            var numPos = new Vector2(_animPos.X + 5, _animPos.Y - _animDeltaY - numSize.Height);
+            for (var i = 0; i < numberStr.Length; i++)
+            {
+                spriteBatch.Draw(CountDrawer.Textures[numberStr[i]], 
+                    new Vector2(numPos.X + i*CountDrawer.TextureWidth, numPos.Y), Color.White*_animAlpha);
+            }
+
             spriteBatch.Draw(_plusTexture, new Vector2(_animPos.X - _plusTexture.Width - 5, 
                 _animPos.Y - _plusTexture.Height - (numSize.Height - _plusTexture.Height)/2 - _animDeltaY), Color.White*_animAlpha);
         }

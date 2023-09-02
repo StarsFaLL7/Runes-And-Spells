@@ -28,8 +28,8 @@ public class MainHouseScreen : IScreen
     private UiButton _buttonScreenAltar;
     private UiButton _buttonScreenOutside;
     private UiAnimatedTexture _uiAnimatedClock;
-    private UiFadingTexture _sleepingBg;
-    private bool _isSleeping;
+    public UiFadingTexture SleepingBg;
+    public bool IsSleeping;
     private Timer _sleepTimer;
     
     public MainHouseScreen(Game1 game) => _game = game;
@@ -51,10 +51,10 @@ public class MainHouseScreen : IScreen
             {
                 if (_game.Introduction.IsPlaying && _game.Introduction.Step == 30)
                 {
-                    _game.ResetForNewGame();
+                    _game.ResetAfterIntroduction();
                     _game.Introduction.Stop();
                 }
-                _sleepingBg.StartFade();
+                SleepingBg.StartFade();
                 _game.NextDay();
             });
         _buttonTableScrolls = new UiButton(
@@ -64,13 +64,13 @@ public class MainHouseScreen : IScreen
             new Vector2(978, 523),
             () =>
             {
-                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 20)
+                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 19)
                 {
                     _game.Inventory.Clear();
                     _game.Inventory.AddItem(new Item(AllGameItems.Paper));
-                    _game.Inventory.AddItem(new Item(AllGameItems.FinishedRunes["rune_finished_water_1_1"]));
                     _game.Inventory.AddItem(new Item(AllGameItems.FinishedRunes["rune_finished_water_1_2"]));
-                    _game.Introduction.Step = 21;
+                    _game.Inventory.AddItem(new Item(AllGameItems.FinishedRunes["rune_finished_grass_1_2"]));
+                    _game.Introduction.Step = 20;
                 }
                 _game.SetScreen(GameScreen.ScrollsCraftingTable);
             });
@@ -102,8 +102,13 @@ public class MainHouseScreen : IScreen
             new Vector2(1825, 472),
             () =>
             {
-                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 15) _game.Introduction.Step = 16;
-                _game.SetScreen(GameScreen.AltarRoomScreen);
+                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 15)
+                {
+                    _game.Introduction.Step = 16;
+                    _game.Inventory.Clear();
+                    _game.Inventory.AddItem(new Item(AllGameItems.FinishedRunes["rune_finished_grass_1_2"]), 2);
+                }
+                _game.SetScreen(GameScreen.AltarScreen);
             } );
         _buttonScreenOutside = new UiButton(
             content.Load<Texture2D>("textures/buttons/button_bottom_screen_default"),
@@ -113,38 +118,40 @@ public class MainHouseScreen : IScreen
             () =>
             {
                 if (_game.Introduction.IsPlaying && _game.Introduction.Step == 0) _game.Introduction.Step = 1;
-                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 24) _game.Introduction.Step = 25;
+                if (_game.Introduction.IsPlaying && _game.Introduction.Step == 23) _game.Introduction.Step = 24;
                 _game.IsInTopDownView = true;
                 _game.TopDownCore.PlayerLastLookDirection = Direction.Left;
+                _game.TopDownCore.SoundTheme = AllGameItems.OutDoorTheme.CreateInstance();
+                _game.TopDownCore.SoundTheme.Play();
             } );
         _uiAnimatedClock = new UiAnimatedTexture(
-            200, 
+            100, 
             content.Load<Texture2D>("textures/animated/clock"),
             new Vector2(192, 192), 
             true);
-        _sleepingBg = new UiFadingTexture(content.Load<Texture2D>("textures/backgrounds/sleeping"),
-            3,
+        SleepingBg = new UiFadingTexture(content.Load<Texture2D>("textures/backgrounds/sleeping"),
+            1.5f,
             UiFadingTexture.Mode.FadeIn,
             () => {
-                if (_sleepingBg.FadeMode == UiFadingTexture.Mode.FadeIn)
-                    _isSleeping = true;
+                if (SleepingBg.FadeMode == UiFadingTexture.Mode.FadeIn)
+                    IsSleeping = true;
                 else
-                    _sleepingBg.Reset(UiFadingTexture.Mode.FadeIn);
-                _sleepTimer.StartWithTime(Random.Shared.Next(5000, 8000)); 
+                    SleepingBg.Reset(UiFadingTexture.Mode.FadeIn);
+                _sleepTimer.StartWithTime(Random.Shared.Next(4000, 5000)); 
             }); 
 
-        _sleepTimer = new Timer(Random.Shared.Next(5000, 8000), () =>
+        _sleepTimer = new Timer(Random.Shared.Next(3000, 5000), () =>
         {
-            _isSleeping = false;
-            _sleepingBg.Reset(UiFadingTexture.Mode.FadeOut);
-            _sleepingBg.StartFade();
+            IsSleeping = false;
+            SleepingBg.Reset(UiFadingTexture.Mode.FadeOut);
+            SleepingBg.StartFade();
             _uiAnimatedClock.SetRandomFrame();
         });
     }
 
     public void Update(GraphicsDeviceManager graphics)
     {
-        if (_isSleeping || _sleepingBg.IsFading) return;
+        if (IsSleeping || SleepingBg.IsFading) return;
         
         var mouseState = Mouse.GetState();
         if (_game.Introduction.IsPlaying)
@@ -163,10 +170,10 @@ public class MainHouseScreen : IScreen
                 case 15:
                     _buttonScreenAltar.Update(mouseState, ref _isButtonFocused);
                     break;
-                case 20:
+                case 19:
                     _buttonTableScrolls.Update(mouseState, ref _isButtonFocused);
                     break;
-                case 24:
+                case 23:
                     _buttonScreenOutside.Update(mouseState, ref _isButtonFocused);
                     break;
                 case 30:
@@ -187,25 +194,29 @@ public class MainHouseScreen : IScreen
 
     public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(_backgroundTexture, new Vector2(0, 0), Color.White);
-        spriteBatch.Draw(_dayPanelTexture, Vector2.Zero, Color.White);
-        var str = "День: " + _game.DayCount;
-        if (_sleepingBg.IsFading && _sleepingBg.FadeMode is UiFadingTexture.Mode.FadeIn)
+        spriteBatch.Draw(_backgroundTexture, new Vector2(0, 0), null, Color.White, 
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        spriteBatch.Draw(_dayPanelTexture, Vector2.Zero, null, Color.White, 
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        var str = $"{Game1.GetText("Day")}: " + _game.DayCount;
+        if (SleepingBg.IsFading && SleepingBg.FadeMode is UiFadingTexture.Mode.FadeIn)
         {
-            str = "День: " + (_game.DayCount - 1);
+            str = $"{Game1.GetText("Day")}: " + (_game.DayCount - 1);
         }
         var stringSize = _font40Px.MeasureString(str);
         spriteBatch.DrawString(_font40Px, str, 
             new Vector2(
                 _dayPanelTexture.Width/2 - stringSize.X / 2, 
-                _dayPanelTexture.Height/2 - stringSize.Y/2), new Color(20, 35, 58));
+                _dayPanelTexture.Height/2 - stringSize.Y/2)*Game1.ResolutionScale, new Color(20, 35, 58),
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        
         foreach (var button in _furnitureButtons) button.Draw(spriteBatch);
         _buttonScreenAltar.Draw(spriteBatch);
         _buttonScreenOutside.Draw(spriteBatch);
-        _sleepingBg.Draw(Vector2.Zero, spriteBatch);
-        if (_isSleeping)
+        SleepingBg.Draw(Vector2.Zero, spriteBatch);
+        if (IsSleeping)
         {
-            _uiAnimatedClock.Draw(new Vector2(864, 444), spriteBatch);
+            _uiAnimatedClock.Draw(new Vector2(864, 444)*Game1.ResolutionScale, spriteBatch);
             _sleepTimer.Tick();
         }
     }

@@ -37,7 +37,7 @@ public static class AllMapDynamicObjects
             {"chest_silver", new DynamicObjectInfo("chest_silver", content.Load<Texture2D>("top-down/objects/chest_silver"), 
                 new Rectangle(0,0,GameMap.TileSize,GameMap.TileSize),
                 new Rectangle(-GameMap.TileSize*4/16,0,GameMap.TileSize*24/16,GameMap.TileSize*12/16))},
-            {"chest_golden", new DynamicObjectInfo("chest_golden", content.Load<Texture2D>("top-down/objects/chest_golden"), 
+            {"chest_gold", new DynamicObjectInfo("chest_golden", content.Load<Texture2D>("top-down/objects/chest_golden"), 
                 new Rectangle(0,0,GameMap.TileSize,GameMap.TileSize),
                 new Rectangle(-GameMap.TileSize*4/16,0,GameMap.TileSize*24/16,GameMap.TileSize*12/16))},
             {"chest_emerald", new DynamicObjectInfo("chest_emerald", content.Load<Texture2D>("top-down/objects/chest_emerald"), 

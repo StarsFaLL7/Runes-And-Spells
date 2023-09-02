@@ -75,7 +75,7 @@ public class Tests
         var pg = new UiProgressBar(
             new Texture2D(_game.Graphics.GraphicsDevice, 100, 100), 
             new Texture2D(_game.Graphics.GraphicsDevice, 100, 100),
-            Vector2.Zero, 
+            UiProgressBar.ProgressDirection.ToRight, 0, 0, Vector2.Zero, 
             10, 150, 20);
         Assert.That(Math.Abs(pg.Value - 20) < TOLERANCE);
         pg.Add(1000);
@@ -94,7 +94,7 @@ public class Tests
             var pg = new UiProgressBar(
                 new Texture2D(_game.Graphics.GraphicsDevice, 100, 100),
                 new Texture2D(_game.Graphics.GraphicsDevice, 100, 100),
-                Vector2.Zero,
+                UiProgressBar.ProgressDirection.ToRight, 0, 0, Vector2.Zero, 
                 10, 150, 20);
             pg.Add(-10);
             Assert.Fail();
@@ -148,26 +148,6 @@ public class Tests
             ItemType.Clay,
             "Глина"));
         Assert.That(item.ID == "clay" && item.Type == ItemType.Clay && item.Count == 1);
-    }
-
-    //[Test]
-    public void FurnaceMiniGameTest()
-    {
-        var pg = new UiProgressBar(
-            new Texture2D(_game.Graphics.GraphicsDevice, 100, 100),
-            new Texture2D(_game.Graphics.GraphicsDevice, 100, 100),
-            Vector2.Zero,
-            10, 150, 20);
-        var inpSlot1 = new UiSlot(
-            Vector2.Zero, new Texture2D(_game.Graphics.GraphicsDevice, 10, 10), true);
-        var minigame = new FurnaceMiniGame(pg, inpSlot1, Vector2.One, _game.Content, _game);
-        inpSlot1.SetItem(new Item(ItemType.UnknownRune, new Texture2D(_game.Graphics.GraphicsDevice, 10, 10),
-            "rune_unknown_grass_1_1", ""));
-        minigame.Start(3);
-        pg.SetValue(150);
-        minigame.Update();
-        Assert.That(inpSlot1.ContainsItem);
-        Assert.That(inpSlot1.currentItem.ID == "rune_finished_grass_1_1");
     }
 
     //[Test]

@@ -5,9 +5,9 @@ public enum ItemType
     Rune,
     UnknownRune,
     Scroll,
-    Catalyst,
     Clay,
     ClaySmall,
     Paper,
-    Key
+    Key,
+    Essence
 }

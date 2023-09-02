@@ -14,7 +14,7 @@ rune_unknown_water_1_1
 rune_unknown_water_1_2
 -----
 ***
-***
+*0*
 *0*
 rune_unknown_water_2_1
 -----

@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Runes_and_Spells.OtherClasses.SaveAndLoad.Records;
 using Runes_and_Spells.TopDownGame.Core.Utility;
 using Runes_and_Spells.TopDownGame.NPCData;
 using Runes_and_Spells.TopDownGame.Objects;
@@ -12,7 +13,7 @@ namespace Runes_and_Spells.TopDownGame.Core;
 
 public class GameMap
 {
-    public Tile[,] Tiles { get; private set; }
+    public Tile[,] Tiles { get; set; }
     public List<Tile[,]> Chunks { get; private set; }
     public const int MapWidth = 160;
     public const int MapHeight = 64;
@@ -34,6 +35,20 @@ public class GameMap
         new Rectangle(MapWidth*TileSize*3/10-160, 3200-160, 320, 320), //Trader
         new Rectangle(MapWidth*TileSize/2-320, 3700-320, 640, 640), //Mage
         new Rectangle(MapWidth*TileSize*9/10-160, 3000-160, 320, 320), // Thief
+    };
+
+    private Dictionary<NPCType, Vector2> NpcPositions;
+
+    private Dictionary<NPCType, string> NpcNames = new()
+    {
+        { NPCType.Trader, "Торговец Альфред"},
+        { NPCType.Bard, "Бард Василек"},
+        { NPCType.Hunter, "Охотник Тормунд"},
+        { NPCType.Mage, "Волшебник Малфиус"},
+        { NPCType.Thief, "Вор"},
+        { NPCType.Witch, "Целительница Вивиана"},
+        { NPCType.Woodman, "Дровосек Иван"},
+        { NPCType.FisherMan, "Рыбак Финли"},
     };
 
     private readonly TopDownCore _gameCore;
@@ -65,35 +80,100 @@ public class GameMap
             Chunks.Add(new Tile[ChunkSize,ChunkSize]);
         }
 
-        var ChunkIndexY = 0;
+        var chunkIndexY = 0;
         for (int x = 0; x < MapWidth; x++)
         {
             var chunkIndexX = -1;
             if (x % ChunkSize == 0)
             {
-                ChunkIndexY = MapHeight / ChunkSize * (x / 8);
+                chunkIndexY = MapHeight / ChunkSize * (x / 8);
             }
             for (int y = 0; y < MapHeight; y++)
             {
-                var type = (TileType)Random.Shared.Next(Enum.GetValues(typeof(TileType)).Length);
                 Tiles[x, y] = new Tile(TileType.Grass, new Vector2(
-                    x*TileSize - cameraPos.X, y*TileSize - cameraPos.Y));
+                    x*TileSize, y*TileSize));
                 
                 if (y % ChunkSize == 0)
                 {
                     chunkIndexX++;
                 }
 
-                Chunks[chunkIndexX + ChunkIndexY][x % ChunkSize, y % ChunkSize] = Tiles[x, y];
+                Chunks[chunkIndexX + chunkIndexY][x % ChunkSize, y % ChunkSize] = Tiles[x, y];
             }
         }
+        FrontObjects = new List<MapObject>();
         GenerateLake();
         GenerateRiver();
+        AddPreGeneratedSolidObjects();
+        GenerateNPCs();
+        GenerateEmeraldChests();
         AddDecorationObjects();
         GenerateSolidObjects();
         GenerateChests();
-        AddPreGeneratedSolidObjects();
         
+    }
+
+    private void GenerateEmeraldChests()
+    {
+        var emeraldChestInfo = AllMapDynamicObjects.AllObjects["chest_emerald"];
+        var placed = 0;
+        var coords = new List<Vector2>()
+        {
+            new Vector2(120*TileSize, 22*TileSize),
+            new Vector2(125*TileSize, 4*TileSize),
+            new Vector2(68*TileSize, 6*TileSize),
+            new Vector2(5*TileSize, 22*TileSize),
+            
+            new Vector2(20*TileSize, 60*TileSize),
+            new Vector2(82*TileSize, 43*TileSize),
+            new Vector2(103*TileSize, 52*TileSize)
+        };
+        foreach (var pos in coords)
+        {
+            FrontObjects.Add(new Chest(pos, emeraldChestInfo, _gameCore, Chest.ChestType.Emerald));
+            NoGenerationAreas.Add(new Rectangle((int)pos.X - 160, (int)pos.Y - 160, 320, 320));
+        }
+    }
+
+    private void GenerateNPCs()
+    {
+        NpcPositions = new Dictionary<NPCType, Vector2>();
+
+        var x = MapWidth - 16;
+        var lastTile = Tiles[MapWidth-16, 0];
+        Vector2 fishermanPos = default;
+        for (var y = 0; y < MapHeight; y++)
+        {
+            if (Tiles[x, y].Type == TileType.Water && lastTile.Type == TileType.Grass)
+            {
+                fishermanPos = new Vector2(lastTile.PositionInPixels.X, lastTile.PositionInPixels.Y);
+                break;
+            }
+            lastTile = Tiles[x, y];
+        }
+
+        NpcPositions.Add(NPCType.FisherMan, fishermanPos);
+        NpcPositions.Add(NPCType.Woodman, new Vector2((MapWidth-48)*TileSize, 604));
+        NpcPositions.Add(NPCType.Hunter,new Vector2(MapWidth/2*TileSize, 672));
+        NpcPositions.Add(NPCType.Bard, new Vector2(MapWidth*3*TileSize/10+3*TileSize, 1300));
+        NpcPositions.Add(NPCType.Witch, new Vector2(1500, 900));
+        NpcPositions.Add(NPCType.Trader, new Vector2(MapWidth*TileSize*3/10+3*TileSize, 3200));
+        NpcPositions.Add(NPCType.Mage, new Vector2(MapWidth*TileSize/2+3*TileSize, 3700));
+        NpcPositions.Add(NPCType.Thief, new Vector2(MapWidth*TileSize*9/10+3*TileSize, 3000));
+        foreach (var npcPos in NpcPositions)
+        {
+            NoGenerationAreas.Add(new Rectangle((int)npcPos.Value.X - 160, (int)npcPos.Value.Y - 160, 320, 320));
+            
+            var id = $"npc_{npcPos.Key.ToString().ToLower()}";
+            if (npcPos.Key == NPCType.Mage)
+            {
+                NPCList.Add(new NPC(npcPos.Value, AllMapDynamicObjects.AllObjects[id],
+                    id, NpcNames[npcPos.Key], npcPos.Key, AllDialogs.MageDialog.FirstPhrase, _gameCore));
+                continue;
+            }
+            NPCList.Add(new NPC(npcPos.Value, AllMapDynamicObjects.AllObjects[id],
+                id, NpcNames[npcPos.Key], npcPos.Key, AllDialogs.DialogInfo[npcPos.Key].FirstPhrase, _gameCore));
+        }
     }
 
     public void GenerateLake()
@@ -155,7 +235,7 @@ public class GameMap
     {
         var startPosY = Tiles.GetLength(1) / 2;
         var posY = startPosY;
-        var maxMove = 10;
+        var maxMove = 8;
         for (var i = 0; i < MapWidth; i += 3)
         {
             for (int j = -3; j < 4; j++)
@@ -214,22 +294,11 @@ public class GameMap
 
     private void GenerateSolidObjects()
     {
-        FrontObjects = new List<MapObject>();
-        MudPuddles = new List<MudPuddle>();
-        
-        
-        //FrontObjects.Add(new Chest(new Vector2(1224, 1224), silverChestInfo, _gameCore, Chest.ChestType.Silver));
-
-        //FrontObjects.Add(new Chest(new Vector2(1124, 1124), goldenChestInfo, _gameCore, Chest.ChestType.Gold));
-        
-        //FrontObjects.Add(new Chest(new Vector2(1324, 1324), emeraldChestInfo, _gameCore, Chest.ChestType.Emerald));
-        
         foreach (var chunk in Chunks)
         {
             var generatedObjects = new List<MapObject>();
             var tries = 4;
-           
-
+            
             if (chunk[0,0].PositionInPixels.X >= 3300 && chunk[0,0].PositionInPixels.X < 6144 &&
                 chunk[0,0].PositionInPixels.Y < 320)
             {
@@ -290,80 +359,40 @@ public class GameMap
     private void GenerateChests()
     {
         var silverChestInfo = AllMapDynamicObjects.AllObjects["chest_silver"];
-        var goldenChestInfo = AllMapDynamicObjects.AllObjects["chest_golden"];
-        var emeraldChestInfo = AllMapDynamicObjects.AllObjects["chest_emerald"];
-        var selectedChunks = new List<Tile[,]>();
-        for (int i = 0; i < 50; i++)
-        {
-            var tries = 0;
-            while (true)
-            {
-                var chunk = Chunks[Random.Shared.Next(Chunks.Count)];
-                if (!selectedChunks.Contains(chunk))
-                {
-                    selectedChunks.Add(chunk);
-                    break;
-                }
-                tries++;
-                if (tries>20)
-                {
-                    break;
-                }
-            }
-        }
-        
-        foreach (var tiles in selectedChunks)
-        {
-            var tilesTemp = tiles;
-            var SilverPlacedhere = false;
-            var indexX = Random.Shared.Next(0, tiles.GetLength(0));
-            var indexY = Random.Shared.Next(0, tiles.GetLength(1));
-            var tile = tiles[indexX, indexY];
-            var tries = 0;
-            while (!SilverPlacedhere)
-            {
-                tries++;
-                tile = tilesTemp[Random.Shared.Next(3, tilesTemp.GetLength(0) - 3),
-                        Random.Shared.Next(3, tilesTemp.GetLength(1) - 3)];
-                if (!IsThereSolidObject(tile.PositionInPixels.X, tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height) && tile.Type == TileType.Grass)
-                {
-                    SilverPlacedhere = true;
-                    FrontObjects.Add(new Chest(
-                        new Vector2(tile.PositionInPixels.X, tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height), 
-                        silverChestInfo, _gameCore, Chest.ChestType.Silver));
-                    break;
-                }
+        var goldenChestInfo = AllMapDynamicObjects.AllObjects["chest_gold"];
 
-                if (tries > 5)
-                {
-                    tilesTemp = Chunks[Random.Shared.Next(Chunks.Count)];
-                    tries = 0;
-                }
-            }
-        }
-
-        var GoldPlaced = 0;
-        while (GoldPlaced < 20)
+        var placed = 0;
+        while (placed < 40)
         {
             var tile = Tiles[Random.Shared.Next(Tiles.GetLength(0)), Random.Shared.Next(Tiles.GetLength(1))];
-            if (!IsThereSolidObject(tile.PositionInPixels.X, tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height) && tile.Type == TileType.Grass)
+            if (!IsThereSolidObject(tile.PositionInPixels.X + silverChestInfo.SpriteSheetRectangle.Height/2, 
+                    tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height/2) && 
+                tile.Type == TileType.Grass && 
+                !IsHidedAfterTree(new Rectangle(
+                    (int)tile.PositionInPixels.X, (int)tile.PositionInPixels.Y,
+                    silverChestInfo.SpriteSheetRectangle.Width, silverChestInfo.SpriteSheetRectangle.Height)))
+            {
+                FrontObjects.Add(new Chest(
+                    new Vector2(tile.PositionInPixels.X, tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height), 
+                    silverChestInfo, _gameCore, Chest.ChestType.Silver));
+                placed++;
+            }
+        }
+        var goldPlaced = 0;
+        while (goldPlaced < 25)
+        {
+            var tile = Tiles[Random.Shared.Next(Tiles.GetLength(0)), Random.Shared.Next(Tiles.GetLength(1))];
+            if (!IsThereSolidObject(tile.PositionInPixels.X + silverChestInfo.SpriteSheetRectangle.Height/2, 
+                    tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height/2) && 
+                tile.Type == TileType.Grass &&
+                IsHidedAfterTree(new Rectangle(
+                    (int)tile.PositionInPixels.X, (int)tile.PositionInPixels.Y,
+                    silverChestInfo.SpriteSheetRectangle.Width, silverChestInfo.SpriteSheetRectangle.Height)))
             {
                 FrontObjects.Add(new Chest(
                     new Vector2(tile.PositionInPixels.X, tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height), 
                     goldenChestInfo, _gameCore, Chest.ChestType.Gold));
-                GoldPlaced++;
-            }
-        }
-        var EmeraldPlaced = 0;
-        while (EmeraldPlaced < 10)
-        {
-            var tile = Tiles[Random.Shared.Next(Tiles.GetLength(0)), Random.Shared.Next(Tiles.GetLength(1))];
-            if (!IsThereSolidObject(tile.PositionInPixels.X, tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height) && tile.Type == TileType.Grass)
-            {
-                FrontObjects.Add(new Chest(
-                    new Vector2(tile.PositionInPixels.X, tile.PositionInPixels.Y + silverChestInfo.SpriteSheetRectangle.Height), 
-                    emeraldChestInfo, _gameCore, Chest.ChestType.Emerald));
-                EmeraldPlaced++;
+                goldPlaced++;
             }
         }
     }
@@ -371,11 +400,12 @@ public class GameMap
 
     private void AddPreGeneratedSolidObjects()
     {
-        AddNPCs();
+        MudPuddles = new List<MudPuddle>
+        {
+            new MudPuddle(new Vector2((MapWidth-12)*TileSize, 640), 
+                AllMapDynamicObjects.AllObjects["mud_puddle"], AllMapDynamicObjects.PlusTextureForChests, _gameCore)
+        };
 
-        MudPuddles.Add(new MudPuddle(new Vector2((MapWidth-12)*TileSize, 640), 
-            AllMapDynamicObjects.AllObjects["mud_puddle"], AllMapDynamicObjects.PlusTextureForChests, _gameCore));
-        
         var fenceHousePositions = new List<Vector2>()
         {
             new Vector2(MapWidth*TileSize,384),
@@ -423,54 +453,9 @@ public class GameMap
         }
     }
 
-    private void AddNPCs()
-    {
-        NPCList.Add(
-            new NPC(new Vector2((MapWidth-50)*TileSize, 604), AllMapDynamicObjects.AllObjects["npc_woodman"], "npc_name", "Дровосек Иван",
-                NPCType.Woodman, AllDialogs.DialogInfo[NPCType.Woodman].FirstPhrase, _gameCore)
-        );
-        
-        var x = MapWidth - 16;
-        var lastTile = Tiles[MapWidth-16, 0];
-        Vector2 fishermanPos = default;
-        for (var y = 0; y < MapHeight; y++)
-        {
-            if (Tiles[x, y].Type == TileType.Water && lastTile.Type == TileType.Grass)
-            {
-                fishermanPos = new Vector2(lastTile.PositionInPixels.X, lastTile.PositionInPixels.Y);
-                break;
-            }
-            lastTile = Tiles[x, y];
-        }
-        NPCList.Add(
-            new NPC(fishermanPos, AllMapDynamicObjects.AllObjects["npc_fisherman"], "npc_fisherman", "Рыбак Финли",
-                NPCType.FisherMan, AllDialogs.DialogInfo[NPCType.FisherMan].FirstPhrase, _gameCore));
-        NoGenerationAreas.Add(new Rectangle((int)fishermanPos.X - 160, (int)fishermanPos.Y - 160, 320, 320));
-        
-        NPCList.Add(
-            new NPC(new Vector2(MapWidth/2*TileSize, 672), AllMapDynamicObjects.AllObjects["npc_hunter"], 
-                "npc_hunter", "Охотник Тормунд", NPCType.Hunter,AllDialogs.DialogInfo[NPCType.Hunter].FirstPhrase,_gameCore));
-        
-        NPCList.Add(
-            new NPC(new Vector2(MapWidth*3*TileSize/10, 1300), AllMapDynamicObjects.AllObjects["npc_bard"], 
-                "npc_bard", "Бард Василек", NPCType.Bard,AllDialogs.DialogInfo[NPCType.Bard].FirstPhrase,_gameCore));
-        NPCList.Add(
-            new NPC(new Vector2(1500, 900), AllMapDynamicObjects.AllObjects["npc_witch"], 
-                "npc_witch", "Целительница Вивиана", NPCType.Witch,AllDialogs.DialogInfo[NPCType.Witch].FirstPhrase,_gameCore));
-        NPCList.Add(new NPC(new Vector2(MapWidth*TileSize*3/10, 3200), AllMapDynamicObjects.AllObjects["npc_trader"], 
-            "npc_trader", "Торговец Альфред", NPCType.Trader, AllDialogs.DialogInfo[NPCType.Trader].FirstPhrase,_gameCore));
-        NPCList.Add(new NPC(new Vector2(MapWidth*TileSize/2, 3700), AllMapDynamicObjects.AllObjects["npc_mage"], 
-            "npc_mage", "Волшебник Малфиус", NPCType.Trader, AllDialogs.MageDialog.FirstPhrase,_gameCore));
-        NPCList.Add(new NPC(new Vector2(MapWidth*TileSize*9/10, 3000), AllMapDynamicObjects.AllObjects["npc_thief"], 
-            "npc_thief", "Вор", NPCType.Trader, AllDialogs.DialogInfo[NPCType.Thief].FirstPhrase,_gameCore));
-    }
+    public Tile GetTileByPixelCoordinates(float x, float y) => Tiles[(int)x / TileSize, (int)y / TileSize];
 
-    public Tile GetTileByPixelCoordinates(float x, float y)
-    {
-        return Tiles[(int)x / TileSize, (int)y / TileSize];
-    }
-
-    public (Rectangle SpriteSheetRectangle, Rectangle CollisionRectangle, bool GroupGeneration, int GenerationWeight, string Name) SelectRandomSolidObjectInfo()
+    private (Rectangle SpriteSheetRectangle, Rectangle CollisionRectangle, bool GroupGeneration, int GenerationWeight, string Name) SelectRandomSolidObjectInfo()
     {
         var variantsToGenerate = new List<(Rectangle SpriteSheetRectangle, Rectangle CollisionRectangle,
             bool GroupGeneration, int GenerationWeight, string Name)>();
@@ -487,7 +472,6 @@ public class GameMap
     {
         return FrontObjects
             .Concat(NPCList)
-            .Where(o => o.IsVisible)
             .Any(o =>
                 new Rectangle(
                         (int)o.PositionInPixelsLeftBottom.X + o.CollisionRectangle.X,
@@ -496,5 +480,102 @@ public class GameMap
                         o.CollisionRectangle.Height)
                     .Contains(x, y)
             );
+    }
+    
+    private bool IsHidedAfterTree(Rectangle objectPosFromTopLeft)
+    {
+        return FrontObjects
+            .Concat(NPCList)
+            .Where(o => o.Name.Contains("tree"))
+            .Any(o => o.PositionInPixelsLeftBottom.Y > objectPosFromTopLeft.Bottom &&
+                      (
+                          new Rectangle(
+                                  (int)o.PositionInPixelsLeftBottom.X,
+                                  (int)o.PositionInPixelsLeftBottom.Y - o.SpriteSheetRectangle.Height*40/48,
+                                  o.SpriteSheetRectangle.Width,
+                                  o.SpriteSheetRectangle.Height*40/48)
+                              .Contains(objectPosFromTopLeft.Center.X, objectPosFromTopLeft.Center.Y)
+                      ));
+    }
+
+    public void LoadFrontObjectFromString(string frontObjectName, Vector2 position)
+    {
+        if (AllMapStaticObjectsInfo.AllOtherSolidObjects.ContainsKey(frontObjectName))
+        {
+            var newObjectInfo = AllMapStaticObjectsInfo.AllOtherSolidObjects.FirstOrDefault(i => i.Key == frontObjectName).Value;
+            var newObject = new MapObject(
+                position,
+                _gameMapSpriteSheet,
+                newObjectInfo.SpriteSheetRectangle,
+                newObjectInfo.CollisionRectangle,
+                newObjectInfo.Name, _gameCore);
+            FrontObjects.Add(newObject);
+        }
+        else
+        {
+            var newObjectInfo = AllMapStaticObjectsInfo.AllGeneratedSolidObjects.FirstOrDefault(i => i.Name == frontObjectName);
+            var newObject = new MapObject(
+                position,
+                _gameMapSpriteSheet,
+                newObjectInfo.SpriteSheetRectangle,
+                newObjectInfo.CollisionRectangle,
+                newObjectInfo.Name, _gameCore);
+            FrontObjects.Add(newObject);
+        }
+    }
+
+    public void LoadChest(Chest.ChestType type, Vector2 position, bool isOpened)
+    {
+        var newObjectInfo = AllMapDynamicObjects.AllObjects[$"chest_{type.ToString().ToLower()}"];
+        var newChest = new Chest(position, newObjectInfo, _gameCore, type);
+        if (isOpened)
+        {
+            newChest.IsOpened = true;
+            newChest.SetOpenedFrame();
+        }
+        FrontObjects.Add(newChest);
+    }
+
+    public void LoadNpc(NPCLoad npcInfo)
+    {
+        var newNPC = new NPC(npcInfo.PositionInPixelsLeftBottom, AllMapDynamicObjects.AllObjects[npcInfo.Name], npcInfo.Name, npcInfo.VisibleName, npcInfo.NPCType,
+            (npcInfo.NPCType == NPCType.Mage ? AllDialogs.MageDialog.FirstPhrase : AllDialogs.DialogInfo[npcInfo.NPCType].FirstPhrase), _gameCore);
+        newNPC.IsQuestActive = npcInfo.IsQuestActive;
+        newNPC.IsQuestFinishedGood = npcInfo.IsQuestFinishedGood;
+        newNPC.IsQuestFinished = npcInfo.IsQuestFinished;
+        newNPC.QuestEndDayCount = npcInfo.QuestEndDayCount;
+        newNPC.IsFirstFinalQuestActive = npcInfo.IsFirstFinalQuestActive;
+        newNPC.IsSecondFinalQuestActive = npcInfo.IsSecondFinalQuestActive;
+        newNPC.GivenScrollPower = npcInfo.GivenScrollPower;
+        newNPC.MageGivenScrollsIds.AddRange(npcInfo.MageGivenScrollsIds);
+        if (newNPC.NPCType == NPCType.Mage)
+        {
+            if (newNPC.IsFirstFinalQuestActive)
+            {
+                newNPC.SetCurrentPhrase(AllDialogs.MageDialog.FirstQuestInProgressPhrase);
+            }
+            if (newNPC.IsSecondFinalQuestActive)
+            {
+                newNPC.SetCurrentPhrase(AllDialogs.MageDialog.SecondQuestInProgressPhrase);
+            }
+        }
+        
+        if (newNPC.IsQuestActive)
+        {
+            newNPC.SetCurrentPhrase(AllDialogs.DialogInfo[newNPC.NPCType].QuestInProgressPhrase);
+        }
+        if (newNPC.IsQuestFinished)
+        {
+            newNPC.SetCurrentPhrase(newNPC.IsQuestFinishedGood
+                ? AllDialogs.DialogInfo[newNPC.NPCType].QuestFinishedGood
+                : AllDialogs.DialogInfo[newNPC.NPCType].QuestFinishedBad);
+        }
+        if (newNPC.IsQuestFinished && newNPC.GivenScrollPower != 0)
+        {
+            newNPC.SetCurrentPhrase(newNPC.IsQuestFinishedGood
+                ? AllDialogs.DialogInfo[newNPC.NPCType].QuestFinishedGood
+                : AllDialogs.DialogInfo[newNPC.NPCType].QuestFinishedBad);
+        }
+        NPCList.Add(newNPC);
     }
 }

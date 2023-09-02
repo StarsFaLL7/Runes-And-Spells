@@ -4,10 +4,8 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using Runes_and_Spells.classes;
 using Runes_and_Spells.Interfaces;
 using Runes_and_Spells.UiClasses;
-using Runes_and_Spells.UtilityClasses;
 
 namespace Runes_and_Spells.Screens;
 
@@ -26,7 +24,7 @@ public class BackStoryScreen : IScreen
     private const float FadeTime = 1f;
     
     private bool _isElementFocused;
-    private List<(UiFadingTexture background, string dialog)> _scenes;
+    private List<UiFadingTexture> _scenes;
     private int _currentScene;
     public void Initialize()
     {
@@ -42,9 +40,9 @@ public class BackStoryScreen : IScreen
             new Vector2(1560, 963),
             () =>
             {
-                if (_currentScene + 1 < _scenes.Count && _scenes[_currentScene].background != _scenes[_currentScene+1].background)
+                if (_currentScene + 1 < _scenes.Count && _scenes[_currentScene] != _scenes[_currentScene+1])
                 {
-                    _scenes[_currentScene+1].background.StartFade();
+                    _scenes[_currentScene+1].StartFade();
                 }
                 
                 if (_scenes.Count - 1 == _currentScene)
@@ -79,20 +77,19 @@ public class BackStoryScreen : IScreen
             content.Load<Texture2D>("textures/main_house_screen/background"), 
             FadeTime, UiFadingTexture.Mode.FadeIn);
         
-        _scenes = new List<(UiFadingTexture background, string dialog)>()
+        _scenes = new List<UiFadingTexture>()
         {
-            (_textureForestLake, texts[0]),
-            (_textureForestEvening, texts[1]),
-            (_textureForestEvening, texts[2]),
-            (_textureForestDay, texts[3]),
-            (_textureForestWithHouse, texts[4]),
-            (_textureForestWithHouse, texts[5]),
-            (_textureForestWithHouse, texts[6]),
-            (_textureForestWithHouse, texts[7]),
-            (_textureForestWithHouse, texts[8]),
-            (_textureInsideHouse, texts[9]),
+            _textureForestLake,
+            _textureForestEvening,
+            _textureForestEvening,
+            _textureForestDay,
+            _textureForestWithHouse,
+            _textureForestWithHouse,
+            _textureForestWithHouse,
+            _textureForestWithHouse,
+            _textureForestWithHouse,
+            _textureInsideHouse
         };
-        //_scenes[0].background.StartFade();
     }
 
     public void Update(GraphicsDeviceManager graphics)
@@ -107,33 +104,32 @@ public class BackStoryScreen : IScreen
     {
         if (_currentScene > 0)
         {
-            _scenes[_currentScene-1].background.Draw(new Vector2(0, 0),spriteBatch);
+            _scenes[_currentScene-1].Draw(new Vector2(0, 0),spriteBatch);
         }
-        _scenes[_currentScene].background.Draw(new Vector2(0, 0),spriteBatch);
+        _scenes[_currentScene].Draw(new Vector2(0, 0),spriteBatch);
         if (_currentScene + 1 < _scenes.Count)
         {
-            _scenes[_currentScene+1].background.Draw(new Vector2(0, 0),spriteBatch);
+            _scenes[_currentScene+1].Draw(new Vector2(0, 0),spriteBatch);
         }
-        //_scenes[_currentScene].background.Draw(new Vector2(0, 0),spriteBatch);
-        spriteBatch.Draw(_dialogBoxTexture, new Vector2(294, 756), Color.White);
-        var y = 756 + _dialogBoxTexture.Height / 2 - _font.MeasureString(_scenes[_currentScene].dialog).Y / 2;
-        spriteBatch.DrawString(_font, _scenes[_currentScene].dialog, new Vector2(332, y), new Color(57, 44,27));
+        
+        spriteBatch.Draw(_dialogBoxTexture, new Vector2(294, 756)*Game1.ResolutionScale, null, 
+            Color.White, 0f, Vector2.Zero, 
+            Game1.ResolutionScale, SpriteEffects.None, 1f);
+
+        var text = Game1.GetText($"Backstory{_currentScene + 1}");
+        var lines = text.Split("\\n");
+        var y = 756 + _dialogBoxTexture.Height / 2 - (_font.LineSpacing*lines.Length) / 2;
+        
+        foreach (var line in lines)
+        {
+            spriteBatch.DrawString(_font, line, new Vector2(332, y) * Game1.ResolutionScale, new Color(57, 44,27),
+                0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+            y += _font.LineSpacing;
+        }
+        //spriteBatch.DrawString(_font, _scenes[_currentScene].dialog, new Vector2(332, y) * Game1.ResolutionScale, new Color(57, 44,27),
+        //    0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         _buttonNextScene.Draw(spriteBatch);
     }
-
-    private List<string> texts = new ()
-    {
-        "В далеком краю странствовал один путешественник, \nпреследующий свою главную цель в жизни. Он долго скитался\nиз одного края мира в другой, изучая обряды и традиции,\nчтобы постичь столь хаотичную силу - магию.",
-        "В один из дней своего путешествия он забрел очень далеко \nв лес и заблудился. Усталость накатывала все сильнее,\nи уже начинало темнеть. Остаться спать в открытом\nместе означало бы гибель, ведь звери в этом лесу\nпросыпаются именно ночью.",
-        "Путешественнику пришлось идти всю ночь в поисках укрытия.\nВокруг то и дело были слышны ужасные вои и пугающие звуки.",
-        "И вот, начало светать. Путник из последних сил забрался \nна высокий склон и, пристально оглядев округу, \nзаметил небольшую избушку.",
-        "Это был заброшенный дом, в котором уже давно никого не \nбыло. Обследуя свое новое укрытие он был очень \nудивлен - в доме находились вещи, про которые он как-то раз\nчитал в старых книгах: алтарь и магическая печь.",
-        "Путник решил остаться в этом доме на несколько дней, \nчтобы передохнуть. На улице рядом с входной дверью \nнаходилась большая лужа грязи, которую было решено убрать.",
-        "На следующий день после уничтожения грязи,\nстранник впал в ступор - лужа снова была полная,\nкак будто он ее и не убирал.",
-        "Внимательно изучив эту необъяснимую на первый взгляд \nлужу грязи, путешественник пришел к выводу:\nэто вовсе не грязь, а магическая глина, \nспособная на регенерацию.",
-        "Тогда к нему и пришло осознание: прошлый владелец дома \nзанимался созданием рун - древним способом хранить \nмагию в глине путем зачарования.",
-        "Не упуская такой возможности, путник решает продолжить дело\nпрошлого хозяина и изучить этот удивительный мир магии.\nНо первым делом ему надо сделать свою первую\nв жизни руну, а потом и свой первый свиток магии."
-    };
 
     public void Reset() => _currentScene = 0;
 }

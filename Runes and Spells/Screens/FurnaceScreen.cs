@@ -21,7 +21,7 @@ public class FurnaceScreen : IScreen
     private UiButton _buttonGoBack;
     private UiProgressBar _progressBar;
     private bool _isButtonFocused;
-    private FurnaceMiniGame _miniGame;
+    public FurnaceMiniGame MiniGame { get; private set; }
     
     public void Initialize()
     {
@@ -35,6 +35,7 @@ public class FurnaceScreen : IScreen
             content.Load<Texture2D>("textures/buttons/button_back_wood_hovered"),
             content.Load<Texture2D>("textures/buttons/button_back_wood_pressed"),
             new Vector2(20, 20),
+            "Back", AllGameItems.Font30Px, new Color(212, 165, 140),
             () =>
             {
                 _game.SetScreen(GameScreen.MainHouseScreen);
@@ -48,29 +49,31 @@ public class FurnaceScreen : IScreen
             content.Load<Texture2D>("textures/furnace_screen/button_wood_start_hovered"),
             content.Load<Texture2D>("textures/furnace_screen/button_wood_start_pressed"),
             new Vector2(794, 583),
+            "Start", AllGameItems.Font30Px, new Color(212, 165, 140),
             () =>
             {
                 if (_game.Introduction.IsPlaying && _game.Introduction.Step == 11) _game.Introduction.Step = 12;
-                _miniGame.Start(_inputSlot.currentItem.ID.Contains("failed") ? 2 : int.Parse(_inputSlot.currentItem.ID.Split('_')[3]));
+                MiniGame.Start(_inputSlot.currentItem.ID.Contains("failed") ? 2 : int.Parse(_inputSlot.currentItem.ID.Split('_')[3]));
             });
         _inputSlot = new UiSlot(new Vector2(912, 444),
             content.Load<Texture2D>("textures/Inventory/slot_bg_stone"),
-            true, ItemType.UnknownRune);
+            _game, ItemType.UnknownRune);
         _progressBar = new UiProgressBar(content.Load<Texture2D>("textures/furnace_screen/mini_game/progress_bar_bg"),
             content.Load<Texture2D>("textures/furnace_screen/mini_game/progress_bar_progress_full"),
-            new Vector2(732, 555),
-            0, 1000, 400);
-        _miniGame = new FurnaceMiniGame(_progressBar, _inputSlot, new Vector2(600, 691), content, _game);
+            UiProgressBar.ProgressDirection.ToRight,0, 0, 
+            new Vector2(732, 555), 0, 1000, 400);
+        MiniGame = new FurnaceMiniGame(_progressBar, _inputSlot, new Vector2(600, 691), content, _game);
     }
 
     public void Update(GraphicsDeviceManager graphics)
     {
         var mouseState = Mouse.GetState();
-        if (_miniGame.IsActive) 
-            _miniGame.Update();
+        if (MiniGame.IsActive) 
+            MiniGame.Update();
         else
         {
-            if (_inputSlot.currentItem is not null && _inputSlot.currentItem.Type == ItemType.UnknownRune) _buttonStartMiniGame.Update(mouseState, ref _isButtonFocused);
+            if (_inputSlot.currentItem is not null && _inputSlot.currentItem.Type == ItemType.UnknownRune) 
+                _buttonStartMiniGame.Update(mouseState, ref _isButtonFocused);
         }
         _inputSlot.Update(_game.Inventory);
         _game.Inventory.Update(graphics, _inputSlot);
@@ -84,7 +87,7 @@ public class FurnaceScreen : IScreen
             if (_game.Introduction.Step == 14)
                 _buttonGoBack.Update(mouseState, ref _isButtonFocused);
         }
-        else if (!_miniGame.IsActive)
+        else if (!MiniGame.IsActive)
         {
             _buttonGoBack.Update(mouseState, ref _isButtonFocused);
         }
@@ -93,11 +96,12 @@ public class FurnaceScreen : IScreen
 
     public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
     {
-        spriteBatch.Draw(_backgroundTexture, new Vector2(0,0), Color.White);
-        if (_miniGame.IsActive)
+        spriteBatch.Draw(_backgroundTexture, new Vector2(0,0), null, 
+            Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        if (MiniGame.IsActive)
         {
             _progressBar.Draw(spriteBatch);
-            _miniGame.Draw(graphics, spriteBatch);
+            MiniGame.Draw(graphics, spriteBatch);
         }
         else
         {

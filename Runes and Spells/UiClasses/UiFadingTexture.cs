@@ -40,7 +40,9 @@ public class UiFadingTexture
         }
         if (_alpha >= 0)
         {
-            spriteBatch.Draw(_texture, position, Color.White * _alpha);
+            spriteBatch.Draw(_texture, new Vector2(position.X, position.Y)*Game1.ResolutionScale, 
+                null, Color.White * _alpha, 0f, Vector2.Zero, 
+                Game1.ResolutionScale, SpriteEffects.None, 1f);
         }
         if (IsFading)
         {

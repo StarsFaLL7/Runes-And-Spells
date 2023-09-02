@@ -72,12 +72,12 @@ public class EndingScreen : IScreen
     private List<string> Story = new List<string>()
     {
         "С решимостью и надеждой в глазах, вы с Малфиусом начинаете свой путь к логову Веракса.\n" +
-        "Они преодолевают горы, болота и темные леса, встречая множество монстров и преград\n" +
-        "на своем пути. Но ни одно испытание не может остановить их стремление к победе.",
+        "Вы преодолеваете горы, болота и темные леса, встречая множество монстров и преград\n" +
+        "на своем пути. Но ни одно испытание не может остановить ваше стремление к победе.",
         
-        "Наконец, они достигают мрачной крепости,\n" +
+        "Наконец, вы достигаете мрачной крепости,\n" +
         "где Веракс Мракотворец держит свое злое владычество.\n" +
-        "Когда он увидел Малфиуса и вас, его глаза сверкали злобой, и он готов дать.",
+        "Веракс увидел Малфиуса и вас, его глаза засверкали злобой.",
         
         "Веракс: Наконец-то я вижу своих гостей. Добро пожаловать в мою обитель, Малфиус\n" +
         "и его беззащитный подопечный.\n" +
@@ -259,11 +259,18 @@ public class EndingScreen : IScreen
             content.Load<Texture2D>("textures/ending_screen/button_scroll_pressed"),
             new Vector2(554, 495), () =>
             {
+                AllGameItems.ClickSound.Play();
                 _step++;
-                //_globalStep = 1;
                 textAfterScroll = $"Вы используете свиток {_game.TopDownCore.FinalScroll}\n" + UseFinalScroll();
                 Story.Add(textAfterScroll);
-                Story.AddRange(VeraxDeadStory);
+                if (VeraxHelps)
+                {
+                    Story.AddRange(VeraxAliveStory);
+                }
+                else
+                {
+                    Story.AddRange(VeraxDeadStory);
+                }
                 Story.AddRange(NPCsStories);
                 Story.Add("Ритуал продолжается");
                 Story.Add("Спустя некоторое время портал захлопывается с оглушающим звуком.");
@@ -275,6 +282,7 @@ public class EndingScreen : IScreen
             content.Load<Texture2D>("textures/ending_screen/button_peace_pressed"),
             new Vector2(1033, 495), () =>
             {
+                AllGameItems.ClickSound.Play();
                 _step++;
                 //_globalStep = 1;
                 textAfterScroll = "Вы решаете поверить Вераксу, ведь его помощь может быть как нельзя кстати";
@@ -308,8 +316,8 @@ public class EndingScreen : IScreen
         if (HealScrolls.Contains(_game.TopDownCore.FinalScroll))
         {
             VeraxHelps = true;
-            return "Силы Веракса неожиданно начинают возвращаться. Его раны затягиваются, а тело исцеляется.\n" +
-                   "Он радостно смеется и благодарит вас за помощь. Теперь он готов помочь вам закрыть портал.";
+            return "Силы Веракса неожиданно начинают возвращаться.\nЕго раны затягиваются, а тело исцеляется.\n" +
+                   "Он радостно смеется и благодарит вас за помощь.\nТеперь он готов помочь вам закрыть портал.";
         }
 
         if (DamageScrolls.Contains(_game.TopDownCore.FinalScroll))
@@ -394,6 +402,7 @@ public class EndingScreen : IScreen
             var mage = _game.TopDownCore.Map.NPCList.First(n => n.Name == "npc_mage");
             mage.PositionInPixelsLeftBottom = new Vector2(GameMap.MapWidth*GameMap.TileSize-1024, 512);
             mage.SetCurrentPhrase(phrase3);
+            _game.TopDownCore.PlayerPosition = new Vector2((GameMap.MapWidth-3)*GameMap.TileSize, 640);
             MediaPlayer.Stop();
             MediaPlayer.Play(mage.GameCore.Game.MusicsMainTheme[mage.GameCore.Game.NextSongIndex]);
         }

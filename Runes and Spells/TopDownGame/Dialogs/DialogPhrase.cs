@@ -5,9 +5,9 @@ namespace Runes_and_Spells.TopDownGame.Dialogs;
 public class DialogPhrase
 {
     public string Text;
-    public AnswerVariant[] AnswerVariants;
+    public readonly AnswerVariant[] AnswerVariants;
     public AnswerVariant SelectedAnswerVariant;
-    public string AlertText;
+    public readonly string AlertText;
 
     public DialogPhrase(string text, string? alertText, params AnswerVariant[] answersVariants)
     {

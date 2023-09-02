@@ -28,6 +28,11 @@ public class Timer
         }
     }
 
+    public void SetDefaultTime(float milliseconds)
+    {
+        DefaultStartTime = milliseconds / 1000 * 60;
+    }
+    
     public void SetTime(float milliseconds)
     {
         Time = milliseconds / 1000 * 60;

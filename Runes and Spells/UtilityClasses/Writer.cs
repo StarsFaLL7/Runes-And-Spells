@@ -57,7 +57,8 @@ public class Writer
             foreach (var symb in word)
             {
                 if (_textures.ContainsKey(symb))
-                    spriteBatch.Draw(_textures[symb], currentPosition, color);
+                    spriteBatch.Draw(_textures[symb], currentPosition*Game1.ResolutionScale, null, 
+                        Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
                 currentPosition.X += _symbWidth;
             }
             currentPosition.X += _symbWidth;

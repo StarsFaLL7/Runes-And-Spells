@@ -1,14 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Runes_and_Spells.OtherClasses;
 using Runes_and_Spells.UiClasses;
 using Runes_and_Spells.UtilityClasses;
 
-namespace Runes_and_Spells.classes;
+namespace Runes_and_Spells.OtherClasses;
 
 public class Inventory
 {
@@ -24,29 +25,28 @@ public class Inventory
         Scrolls,
         Other
     }
+
+    public Rectangle VisibleRectangle { get; private set; }
     
     private Texture2D _backgroundTexture;
     private Texture2D _slotTexture;
     private Texture2D _slotBorderTexture;
-    private Texture2D _toolTipBgTexture;
-    private Texture2D _toolTipBgOutlineTexture;
+    private Texture2D _glowTexture;
 
     private UiButton _arrowSmallRightButton;
     private UiButton _arrowSmallLeftButton;
     private UiButton _arrowBigRightButton;
     private UiButton _arrowBigLeftButton;
-    private Dictionary<Tab, Texture2D> _tabTitleTextures;
-    private List<Texture2D> _pageTitleTextures;
     private bool _isObjectFocused;
-    private Color _toolTipTextColor;
     
     private int _currentPage;
     private Tab _currentTab;
     private Item[] _itemsToDraw = {};
-    public List<Item> Items { get; } = new ();
-    public bool IsOpened { get; private set; }
+    public List<Item> Items { get; set; } = new ();
+    private bool IsOpened { get; set; }
     private UiButton _buttonCloseInv;
     private UiButton _buttonOpenInv;
+    private SoundEffect _openCloseSound;
 
     public void Initialize()
     {
@@ -54,10 +54,12 @@ public class Inventory
 
     public void LoadContent(ContentManager content, GraphicsDeviceManager graphics)
     {
-        _toolTipTextColor = Color.FromNonPremultiplied(48, 56, 67, 255);
-        _toolTipBgTexture = content.Load<Texture2D>("textures/Inventory/items/ToolTipBg");
-        _toolTipBgOutlineTexture = content.Load<Texture2D>("textures/Inventory/items/ToolTipBgOutline");
+        _openCloseSound = content.Load<SoundEffect>("sounds/inv_sound");
         _backgroundTexture = content.Load<Texture2D>("textures/Inventory/inv_back");
+        _glowTexture = content.Load<Texture2D>("textures/Inventory/glow_cell");
+        VisibleRectangle = new Rectangle(
+            _game.ScreenWidth - _backgroundTexture.Width, (_game.ScreenHeight - _backgroundTexture.Height)/2,
+            _backgroundTexture.Width, _backgroundTexture.Height);
         _slotTexture = content.Load<Texture2D>("textures/Inventory/slot_bg");
         _slotBorderTexture = content.Load<Texture2D>("textures/Inventory/slot_border");
         _arrowBigRightButton = new UiButton(content.Load<Texture2D>("textures/Inventory/arrow_big_right_default"),
@@ -66,6 +68,7 @@ public class Inventory
             new Vector2(1843, 136),
             () =>
             {
+                AllGameItems.ClickSound.Play();
                 _currentPage = 0;
                 if (_currentTab == Tab.Other)
                 {
@@ -81,6 +84,7 @@ public class Inventory
             new Vector2(1510, 136),
             () =>
             {
+                AllGameItems.ClickSound.Play();
                 _currentPage = 0;
                 if (_currentTab == Tab.Runes)
                 {
@@ -98,6 +102,7 @@ public class Inventory
             {
                 if (_currentPage > 0)
                     _currentPage--;
+                AllGameItems.ClickSound.Play();
             }
         );
         _arrowSmallRightButton = new UiButton(content.Load<Texture2D>("textures/Inventory/arrow_small_right_default"),
@@ -106,33 +111,28 @@ public class Inventory
             new Vector2(1768, 923),
             () =>
             {
-                if (_currentPage < _pageTitleTextures.Count - 1)
-                    _currentPage++;
+                _currentPage++;
+                AllGameItems.ClickSound.Play();
             }
         );
         _buttonCloseInv = new UiButton(content.Load<Texture2D>("textures/Inventory/button_close_inv_default"),
             content.Load<Texture2D>("textures/Inventory/button_close_inv_hovered"),
             content.Load<Texture2D>("textures/Inventory/button_close_inv_pressed"),
-            new Vector2(Game1.ScreenWidth - _backgroundTexture.Width - 42, Game1.ScreenHeight/2 - 45),
-            () => IsOpened = false);
+            new Vector2(1920 - _backgroundTexture.Width - 42, 1080f/2 - 45),
+            () =>
+            {
+                IsOpened = false;
+                _openCloseSound.Play();
+            });
         _buttonOpenInv = new UiButton(content.Load<Texture2D>("textures/Inventory/button_open_inv_default"),
             content.Load<Texture2D>("textures/Inventory/button_open_inv_hovered"),
             content.Load<Texture2D>("textures/Inventory/button_open_inv_pressed"),
-            new Vector2(Game1.ScreenWidth - 42, Game1.ScreenHeight/2 - 45),
-            () => IsOpened = true);
-
-        
-        _pageTitleTextures = new List<Texture2D>();
-        for (var i = 0; i < 8; i++)
-            _pageTitleTextures.Add(content.Load<Texture2D>($"textures/Inventory/title_page{i}"));
-        
-        _tabTitleTextures = new Dictionary<Tab, Texture2D>()
-        {
-            {Tab.Other, content.Load<Texture2D>("textures/Inventory/title_other")},
-            {Tab.Runes, content.Load<Texture2D>("textures/Inventory/title_runes")},
-            {Tab.Scrolls, content.Load<Texture2D>("textures/Inventory/title_scrolls")}
-        };
-        //AddAllItems(5);
+            new Vector2(1920 - 42, 1080f/2 - 45),
+            () =>
+            {
+                IsOpened = true;
+                _openCloseSound.Play();
+            });
     }
 
     public void Update(GraphicsDeviceManager graphics, params UiSlot[] dropableSlots)
@@ -193,8 +193,8 @@ public class Inventory
                     new Vector2(
                     1489 + (_slotTexture.Width + 9) * x,
                     207 + (_slotTexture.Width + 9) * y), dropableSlots.ToList());
-        // var kb = Keyboard.GetState().GetPressedKeys();
-        // if (kb.Contains(Keys.H) && kb.Contains(Keys.A) && kb.Contains(Keys.C) && kb.Contains(Keys.K)) AddAllItems();
+        var kb = Keyboard.GetState().GetPressedKeys();
+        if (kb.Contains(Keys.H) && kb.Contains(Keys.A) && kb.Contains(Keys.C) && kb.Contains(Keys.K)) AddAllItems();
     }
 
     public void Draw(GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
@@ -211,8 +211,9 @@ public class Inventory
         }
         
         spriteBatch.Draw(_backgroundTexture, 
-            new Vector2(Game1.ScreenWidth - _backgroundTexture.Width,
-                (Game1.ScreenHeight - _backgroundTexture.Height)/2), Color.White);
+            new Vector2(_game.ScreenWidth - _backgroundTexture.Width*Game1.ResolutionScale.X,
+                (_game.ScreenHeight - _backgroundTexture.Height*Game1.ResolutionScale.Y)/2), null, Color.White, 
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
         
         if (_currentPage > 0)
             _arrowSmallLeftButton.Draw(spriteBatch);
@@ -220,49 +221,107 @@ public class Inventory
             _arrowSmallRightButton.Draw(spriteBatch);
         _arrowBigLeftButton.Draw(spriteBatch);
         _arrowBigRightButton.Draw(spriteBatch);
-        spriteBatch.Draw(_tabTitleTextures[_currentTab], new Vector2(1545, 132), Color.White);
-        spriteBatch.Draw(_pageTitleTextures[_currentPage], new Vector2(1620, 924), Color.White);
+
+        var text = Game1.GetText(_currentTab.ToString());
+        var textSize = AllGameItems.Font40Px.MeasureString(text);
+        var position = new Vector2(1920 - _backgroundTexture.Width + 12 + (_backgroundTexture.Width - 12 - textSize.X) / 2,
+            _arrowBigLeftButton.Position.Y + (float)_arrowBigLeftButton.ActualTexture().Height/2 - textSize.Y/2);
+        spriteBatch.DrawString(AllGameItems.Font40Px, text, new Vector2(position.X+3, position.Y+3)*Game1.ResolutionScale, new Color(0,0,0,33),
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        spriteBatch.DrawString(AllGameItems.Font40Px, text, position*Game1.ResolutionScale, new Color(119,48,45),
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+
+        text = $"{Game1.GetText("Page")} {_currentPage + 1}";
+        textSize = AllGameItems.Font30Px.MeasureString(text);
+        position = new Vector2(1920 - _backgroundTexture.Width + 12 + (_backgroundTexture.Width - 12 - textSize.X) / 2,
+            _arrowSmallLeftButton.Position.Y + (float)_arrowSmallLeftButton.ActualTexture().Height/2 - textSize.Y/2);
+        spriteBatch.DrawString(AllGameItems.Font30Px, text, new Vector2(position.X+3, position.Y+3)*Game1.ResolutionScale, new Color(0,0,0,33),
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        spriteBatch.DrawString(AllGameItems.Font30Px, text, position*Game1.ResolutionScale, new Color(119,48,45),
+            0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
+        
         for (var y = 0; y < 6; y++)
             for (var x = 0; x < 4; x++)
-                spriteBatch.Draw(_slotTexture, new Vector2(1489 + (_slotTexture.Width+9)*x, 207 + (_slotTexture.Width+9)*y), Color.White);
+                spriteBatch.Draw(_slotTexture, new Vector2(1489 + (_slotTexture.Width+9)*x, 207 + (_slotTexture.Width+9)*y)*Game1.ResolutionScale, 
+                    null, Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, 
+                    SpriteEffects.None, 1f);
         
         var draggedItem = _itemsToDraw.FirstOrDefault(i => i.IsBeingDragged);
+        var toolTipItem = _itemsToDraw.FirstOrDefault(i => i.ShowToolTip);
+        
         for (var y = 0; y < 6; y++)
             for (var x = 0; x < 4; x++)
                 if (_itemsToDraw.Length > x + 4 * y)
                 {
-                    _itemsToDraw[x+4*y].Draw(spriteBatch, new Vector2(1489 + (_slotTexture.Width+9)*x, 207 + (_slotTexture.Width+9)*y));
-                    spriteBatch.Draw(_slotBorderTexture, new Vector2(1489 + (_slotTexture.Width+9)*x, 207 + (_slotTexture.Width+9)*y), Color.White);
+                    if (_game.CurrentScreen == GameScreen.ScrollsCraftingTable && toolTipItem != default && 
+                        toolTipItem.Type == ItemType.Rune)
+                    {
+                        if (CheckForRuneCompatibility(toolTipItem, _itemsToDraw[x+4*y]))
+                        {
+                            spriteBatch.Draw(_glowTexture, 
+                                new Vector2(
+                                    1489 + (_slotTexture.Width+9)*x + 9, 
+                                    207 + (_slotTexture.Width+9)*y + 9)*Game1.ResolutionScale, 
+                                null, Color.White, 0f, Vector2.Zero, 
+                                Game1.ResolutionScale, SpriteEffects.None, 1f); 
+                        }
+                    }
+                    
+                    _itemsToDraw[x+4*y].Draw(spriteBatch, 
+                        new Vector2(1489 + (_slotTexture.Width+9)*x, 207 + (_slotTexture.Width+9)*y)*Game1.ResolutionScale);
+                    spriteBatch.Draw(_slotBorderTexture, 
+                        new Vector2(1489 + (_slotTexture.Width+9)*x, 207 + (_slotTexture.Width+9)*y)*Game1.ResolutionScale, 
+                        null, Color.White, 0f, Vector2.Zero, Game1.ResolutionScale, SpriteEffects.None, 1f);
                     if (_itemsToDraw[x+4*y].Count > 1)
                         CountDrawer.DrawNumber(_itemsToDraw[x+4*y].Count, 
-                            new Vector2(1489 + (_slotTexture.Width+9)*x+_slotTexture.Width+2, 207 + (_slotTexture.Width+9)*y+_slotTexture.Width-3),
+                            new Vector2(
+                                1489 + (_slotTexture.Width+9)*x+_slotTexture.Width+2, 
+                                207 + (_slotTexture.Width+9)*y+_slotTexture.Width-3),
                             spriteBatch);
                     
                 }
-        var toolTipItem = _itemsToDraw.FirstOrDefault(i => i.ShowToolTip);
         if (draggedItem != default) draggedItem.DrawAtMousePos(spriteBatch);
-        if (draggedItem == default && toolTipItem != default) DrawToolTip(toolTipItem, graphics, spriteBatch);
+        if (draggedItem == default && toolTipItem != default) _game.ToolTipItem = toolTipItem;
     }
 
-    private void DrawToolTip(Item toolTipItem, GraphicsDeviceManager graphics, SpriteBatch spriteBatch)
+    public int GetCountOfItems(Func<Item, bool> predicate)
     {
-        var strSize = AllGameItems.ToolTipFont.MeasureString(toolTipItem.ToolTipText);
-        var rect = new Rectangle(
-            (_toolTipBgTexture.Width - (int)strSize.X) / 2 - 16, 
-            (_toolTipBgTexture.Height - (int)strSize.Y) / 2 - 16,
-            (int)strSize.X + 16, (int)strSize.Y + 6);
-        
-        var posToDraw = new Vector2(Mouse.GetState().X + 12, Mouse.GetState().Y + 12);
-        if (Mouse.GetState().X > graphics.PreferredBackBufferWidth - rect.Width - 20)
-            posToDraw = new Vector2(Mouse.GetState().X - rect.Width, Mouse.GetState().Y + 12);
-        
-        spriteBatch.Draw(_toolTipBgOutlineTexture, new Vector2(posToDraw.X - 3, posToDraw.Y - 3), 
-            new Rectangle(rect.X-6, rect.Y-6, rect.Width + 6, rect.Height + 6), Color.White);
-        spriteBatch.Draw(_toolTipBgTexture, posToDraw, rect, Color.White);
+        var item = Items.FirstOrDefault(predicate);
+        if (item is not default(Item))
+        {
+            return item.Count;
+        }
+        return -1;
+    }
 
-        spriteBatch.DrawString(AllGameItems.ToolTipFont, toolTipItem.ToolTipText,
-            new Vector2(posToDraw.X+9, posToDraw.Y+3), _toolTipTextColor, 0f, Vector2.Zero, 
-            1f,SpriteEffects.None, 0f);
+    public bool TryGetItem(Func<Item, bool> predicate, out Item item)
+    {
+        var found = Items.FirstOrDefault(predicate);
+        if (found is not default(Item))
+        {
+            item = found;
+            return true;
+        }
+
+        item = null;
+        return false;
+    }
+
+    private bool CheckForRuneCompatibility(Item rune1, Item rune2)
+    {
+        var selectedRuneInfo = rune1.ID.Split('_');
+        var runeInfo = rune2.ID.Split('_');
+        
+        if (rune1.Type != ItemType.Rune || rune2.Type != ItemType.Rune ||
+            runeInfo[1] != "finished" || runeInfo[3] != selectedRuneInfo[3])
+            return false;
+        if (runeInfo[2] != selectedRuneInfo[2] && runeInfo[4] == selectedRuneInfo[4] ||
+            runeInfo[2] == selectedRuneInfo[2] && runeInfo[4] != selectedRuneInfo[4])
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public void AddItem(Item item, int count = 1)

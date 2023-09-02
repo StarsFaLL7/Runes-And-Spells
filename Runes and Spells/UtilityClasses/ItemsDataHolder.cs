@@ -44,6 +44,19 @@ public static class ItemsDataHolder
             {
                 ScrollTexturesX64.Add(type, content.Load<Texture2D>($"textures/scrolls/x64/scroll_{type.ToString().ToLower()}"));
             }
+
+            foreach (var pair in ScrollsRecipes.Recipes)
+            {
+                for (var i = 1; i < 4; i++)
+                {
+                    var id = string.Join('_', pair.Value.id, pair.Value.Type.ToString().ToLower(), i);
+                    AllScrolls.Add(id, 
+                        new ItemInfo(id, ScrollsTypesInfo[pair.Value.Type].texture2D, ItemType.Scroll, 
+                            $"Свиток {pair.Value.rus}\n" +
+                            $"Тип: {ScrollsTypesInfo[pair.Value.Type].rus}\n" +
+                            $"Сила: {i}"));
+                }
+            }
         }
     }
     
@@ -88,12 +101,6 @@ public static class ItemsDataHolder
             
             UnknownRunes = new Dictionary<string, ItemInfo>();
             
-            UnknownRunes.Add("rune_unknown_failed", 
-                new ItemInfo("rune_unknown_failed", 
-                    content.Load<Texture2D>("textures/Inventory/items/empty_rune_failed"), 
-                    ItemType.UnknownRune,
-                    "Неизвестная руна"));
-            
             FinishedRunes = new Dictionary<string, ItemInfo>();
             for (var i = 1; i < 10; i++)
             for (var j = 1; j < 7; j++)
@@ -109,7 +116,7 @@ public static class ItemsDataHolder
                     new ItemInfo($"rune_unknown_{Elements[i].id}_{(j - 1) / 2 + 1}_{(j - 1) % 2 + 1}",
                         content.Load<Texture2D>($"textures/Inventory/items/empty_rune_{Elements[i].id}"), 
                         ItemType.UnknownRune,
-                        "Неизвестная руна"));
+                        "Слепок неизвестной руны"));
                 
                 RecipeX64RunesTextures[$"rune_{Elements[i].id}_{(j - 1) / 2 + 1}_{(j - 1) % 2 + 1}"] = 
                     content.Load<Texture2D>($"textures/runes/x64/rune_{Elements[i].id}_{(j - 1) / 2 + 1}_{(j - 1) % 2 + 1}");
@@ -183,15 +190,32 @@ public static class ItemsDataHolder
         }
     }
     
-    public static class Catalysts
+    public static class PowerEssences
     {
-        public static Dictionary<string, ItemInfo> AllCatalysts { get; } = new();
+        public static List<ItemInfo> AllEssences { get; } = new();
+
+        public static void Initialize(ContentManager content)
+        {
+            for (var i = 1; i < 4; i++)
+            {
+                AllEssences.Add(new ItemInfo($"essence_{i}", content.Load<Texture2D>($"textures/other_items/power_essence_{i}"),
+                    ItemType.Essence, $"Эссенция руны\n" +
+                                      $"Сила: {i}"));
+            }
+            
+        }
+
+        public static ItemInfo GetEssenceInfo(int power) => AllEssences[power - 1];
+        public static ItemInfo GetEssenceInfo(char power) => GetEssenceInfo(int.Parse($"{power}"));
+        public static ItemInfo GetEssenceInfo(string id) => GetEssenceInfo(int.Parse($"{id[^1]}"));
     }
+    
     
     public static void Initialize(ContentManager content)
     {
         Scrolls.Initialize(content);
         Runes.Initialize(content);
         OtherItems.Initialize(content);
+        PowerEssences.Initialize(content);
     }
 }
