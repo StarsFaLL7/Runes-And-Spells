@@ -106,7 +106,9 @@ public static class AllDialogs
                 "что поможет выгнать их!",
                 "Подсказка: У вас появилось задание отдать свиток магии персонажу.\n" +
                 "Обратите внимание, что вы можете отдать ему абсолютно любой свиток.\n" +
-                "Чем больше будет его сила, тем влиятельней будет ваша помощь.",
+                "Однако убедитесь, что эффект вашего свитка будет полезен.\n" +
+                "Чтобы отдать свиток, откройте диалог с персонажем\n" +
+                "и перетащите его в слот в лиалогом окне",
                 new AnswerVariant("Я скоро вернусь.", QuestInProgressPhrase, true,
                     npc => npc.IsQuestActive = true));
             var phrase4 = new DialogPhrase(
@@ -129,7 +131,8 @@ public static class AllDialogs
             var phrase7 = new DialogPhrase(
                 "Мне нужна твоя помощь, и я плачу неплохо.",
                 null,
-                new AnswerVariant("Я занимаюсь изучением рун и заклинаний. Чем я могу тебе помочь?", phrase6, false));
+                new AnswerVariant("Я занимаюсь изучением рун и заклинаний.\n" +
+                                  "Чем я могу тебе помочь?", phrase6, false));
 
             FirstPhrase = new DialogPhrase(
                 "Эй, ты! Ты тот странноватый тип, который поселился в лесу, верно?", null,
@@ -203,10 +206,10 @@ public static class AllDialogs
                 "Да, умный ты парень, но вот не в моих это силах.\n" +
                 "Малфиус смог бы с этим помочь. Моя проблема более низменная:\n" +
                 "рыба перестает водится в реке. Малфиус помогал мне ее ловить\n" +
-                "при помощи магии океана. Может, у тебя получится создать для\n" +
-                "меня свиток магии Океана, который помог бы мне увеличить улов?", null,
+                "при помощи магии океана. Может, ты сможешь мне помочь?", null,
                 new AnswerVariant("Да, я постараюсь создать для тебя подходящий свиток.", questAcceptedPhrase, false),
-                new AnswerVariant("К сожалению, я не смогу помочь. Мне еще предстоит изучить все аспекты магии океана.", questCanceledPhrase,
+                new AnswerVariant("К сожалению, я не смогу помочь.\n" +
+                                  "Мне еще предстоит изучить все аспекты магии океана.", questCanceledPhrase,
                     false));
 
             var phrase5 = new DialogPhrase(
@@ -251,7 +254,8 @@ public static class AllDialogs
                 "Рыбак Финли рад видеть тебя на берегу океана.\n" +
                 "Пришел сюда в поисках чего-то особенного, а не просто поймать\n" +
                 "рыбку, да?", null,
-                new AnswerVariant("Здравствуй, старый рыбак, как ты понял, что я занимаюсь магией?", phrase10, false));
+                new AnswerVariant("Здравствуй, старый рыбак,\n" +
+                                  "как ты понял, что я занимаюсь магией?", phrase10, false));
             
             DialogInfo.Add(NPCType.FisherMan, (FirstPhrase, QuestInProgressPhrase, QuestJustFinishedPhrase, QuestFinishedGood, QuestFinishedBad, FinalPhraseGood, FinalPhraseBad));
         }
@@ -567,8 +571,9 @@ public static class AllDialogs
                 "влюбить в себя девушку. Ко мне приходят все меньше людей, все боятся\n" +
                 "заходить в лес после того, как началось что-то плохое.\n" +
                 "Однако, я не знаю, как помочь этому человеку.", null,
-                new AnswerVariant("Я занимаюсь изучением магии и рун, поэтому думаю, что смогу тебе помочь.\n" +
-                                  "А что ты знаешь о том, что происходит вокруг?", phrase2, false));
+                new AnswerVariant(
+                    "Я занимаюсь изучением магии, думаю, что смогу тебе помочь.\n" +
+                    "Что ты знаешь о том, что происходит?", phrase2, false));
             var phrase4 = new DialogPhrase(
                 "Ты знаешь, я принимаю у себя жителей из города и помогаю им\n" +
                 "излечиться от болезней и травм. Я живу на эти деньги, чтобы продолжать\n" +
@@ -580,7 +585,8 @@ public static class AllDialogs
                 "Добро пожаловать, путник. Меня зовут Вивиана.\n" +
                 "Я рада, что ты нашел меня. Я видела, как ты помогал моим знакомым в\n" +
                 "этом лесу, и мне тоже нужна твоя помощь.", null,
-                new AnswerVariant("Здравствуй. Я всегда готов помочь. В чем заключается твоя просьба?", phrase4, false));
+                new AnswerVariant("Здравствуй. Я всегда готов помочь.\n" +
+                                  "В чем заключается твоя просьба?", phrase4, false));
 
             DialogInfo.Add(NPCType.Witch, (FirstPhrase, QuestInProgressPhrase, QuestJustFinishedPhrase, QuestFinishedGood, QuestFinishedBad, FinalPhraseGood, FinalPhraseBad));
         }
